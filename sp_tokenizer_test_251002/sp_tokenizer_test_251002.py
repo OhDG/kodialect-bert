@@ -17,7 +17,7 @@ region_dirs = {
     "전라도": "JSON만_모은폴더_전라도", "제주도": "JSON만_모은폴더_제주도",
     "충청도": "JSON만_모은폴더_충청도"
 }
-file_dir = "../../../project1_dataset"
+file_dir = "../../project1_dataset"
 all_texts = []
 
 for region, subdir in region_dirs.items():
@@ -44,6 +44,24 @@ df_all['text'] = df_all['text'].str.strip()
 df_all = df_all[df_all['text'] != '']
 
 print(f"최종 훈련 문장 수: {len(df_all):,}")
+
+
+# df_all = pd.DataFrame({"text": all_texts})
+
+# # 1) 문자열만 남기기
+# df_all = df_all[df_all["text"].apply(lambda x: isinstance(x, str))].copy()
+
+# # 2) 전처리 (개행/스페이스 정리 → 빈 문자열 제거)
+# df_all["text"] = df_all["text"].str.replace(r"\s+", " ", regex=True).str.strip()
+# df_all = df_all[df_all["text"] != ""]
+
+# # 3) 괄호 안, 특수문자 제거 등 추가 클리닝
+# df_all["text"] = df_all["text"].str.replace(r"\([^)]*\)|\[[^)]*\]", "", regex=True)
+# df_all["text"] = df_all["text"].str.replace(r"[^가-힣a-zA-Z0-9.,?! ]", "", regex=True).str.strip()
+# df_all = df_all[df_all["text"] != ""]
+
+# print(f"최종 훈련 문장 수: {len(df_all):,}")
+
 
 # ==============================================================================
 # ### 2단계: 텍스트 파일로 저장 (SentencePiece 학습용)
