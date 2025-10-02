@@ -109,7 +109,10 @@ print("\n===== [2단계] 커스텀 토크나이저 로딩 및 모델 리사이�
 
 # ✅ 1. '느린' 토크나이저로 .model과 .vocab 파일을 로드합니다.
 #    XLMRobertaTokenizer는 sentencepiece 모델을 다룰 수 있는 대표적인 '느린' 토크나이저입니다.
-slow_tokenizer = XLMRobertaTokenizer(vocab_file="dialect_spm.vocab", sp_model_file="dialect_spm.model")
+# slow_tokenizer = XLMRobertaTokenizer(vocab_file="dialect_spm.vocab", sp_model_file="dialect_spm.model")
+
+
+slow_tokenizer = XLMRobertaTokenizer(vocab_file="dialect_spm.model")
 
 # ✅ 2. (중요) BERT 계열 모델에서 사용하는 특수 토큰들을 추가해줍니다.
 special_tokens_to_add = ['[CLS]', '[SEP]', '[MASK]']
