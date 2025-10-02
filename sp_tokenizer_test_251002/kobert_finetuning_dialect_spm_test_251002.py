@@ -9,7 +9,8 @@ from sklearn.model_selection import train_test_split
 from datasets import Dataset
 from transformers import (
     AutoModelForSequenceClassification,
-    PreTrainedTokenizerFast, # ✅ AutoTokenizer 대신 PreTrainedTokenizerFast를 사용합니다.
+    XLMRobertaTokenizer,      # ✅ '느린' 토크나이저를 임포트합니다.
+    PreTrainedTokenizerFast,  # ✅ '빠른' 토크나이저로 변환하기 위해 임포트합니다.
     TrainingArguments,
     Trainer,
     EarlyStoppingCallback
