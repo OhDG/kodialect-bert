@@ -18,7 +18,7 @@ region_dirs = {
     "전라도": "JSON만_모은폴더_전라도", "제주도": "JSON만_모은폴더_제주도",
     "충청도": "JSON만_모은폴더_충청도"
 }
-file_dir = "../../project1_dataset"
+file_dir = "../../../project1_dataset"
 all_texts = []
 
 for region, subdir in region_dirs.items():
