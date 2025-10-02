@@ -68,34 +68,74 @@ test_dataset = Dataset.from_pandas(test_df.reset_index(drop=True))
 print(f"데이터 로딩 완료: Train {len(train_dataset):,}개, Test {len(test_dataset):,}개")
 
 
+# # ==============================================================================
+# # ### 2단계: 커스텀 토크나이저 로딩 및 모델 준비 (핵심 수정 부분)
+# # ==============================================================================
+# print("\n===== [2단계] 커스텀 토크나이저 로딩 및 모델 리사이즈 시작 =====")
+
+# # ✅ 1. SentencePiece로 만든 .model 파일을 직접 로드하여 토크나이저를 생성합니다.
+# #    (이전에 생성한 'dialect_spm.model' 파일이 이 스크립트와 같은 위치에 있어야 합니다.)
+# tokenizer_file = "dialect_spm.model"
+# tokenizer = PreTrainedTokenizerFast(
+#     tokenizer_file=tokenizer_file,
+#     pad_token="<pad>", # PAD 토큰 명시
+#     unk_token="<unk>", # UNK 토큰 명시
+#     bos_token="<s>",   # BOS 토큰 명시
+#     eos_token="</s>",   # EOS 토큰 명시
+# )
+# print(f"커스텀 토크나이저 로딩 완료. 어휘 사전 크기: {len(tokenizer)}")
+
+
+# # ✅ 2. KoBERT 모델을 로드합니다.
+# model = AutoModelForSequenceClassification.from_pretrained(
+#     "monologg/kobert",
+#     num_labels=5
+# )
+# print(f"기존 KoBERT 모델의 임베딩 크기: {model.get_input_embeddings().weight.shape[0]}")
+
+
+
+# # ✅ 3. (매우 중요!) 모델의 임베딩 레이어 크기를 새로운 토크나이저 크기에 맞게 조정합니다.
+# #    이 과정은 기존 임베딩 지식을 무효화하고, 새로운 크기에 맞춰 레이어를 사실상 재초기화합니다.
+# model.resize_token_embeddings(len(tokenizer))
+# print(f"리사이즈된 모델의 임베딩 크기: {model.get_input_embeddings().weight.shape[0]}")
+
+
 # ==============================================================================
-# ### 2단계: 커스텀 토크나이저 로딩 및 모델 준비 (핵심 수정 부분)
+# ### 2단계: 커스텀 토크나이저 로딩 및 모델 준비 (최종 수정)
 # ==============================================================================
 print("\n===== [2단계] 커스텀 토크나이저 로딩 및 모델 리사이즈 시작 =====")
 
-# ✅ 1. SentencePiece로 만든 .model 파일을 직접 로드하여 토크나이저를 생성합니다.
-#    (이전에 생성한 'dialect_spm.model' 파일이 이 스크립트와 같은 위치에 있어야 합니다.)
-tokenizer_file = "dialect_spm.model"
+# ✅ 1. '느린' 토크나이저로 .model과 .vocab 파일을 로드합니다.
+#    XLMRobertaTokenizer는 sentencepiece 모델을 다룰 수 있는 대표적인 '느린' 토크나이저입니다.
+slow_tokenizer = XLMRobertaTokenizer(vocab_file="dialect_spm.vocab", sp_model_file="dialect_spm.model")
+
+# ✅ 2. (중요) BERT 계열 모델에서 사용하는 특수 토큰들을 추가해줍니다.
+special_tokens_to_add = ['[CLS]', '[SEP]', '[MASK]']
+slow_tokenizer.add_special_tokens({'additional_special_tokens': special_tokens_to_add})
+
+# ✅ 3. '느린' 토크나이저를 '빠른' 토크나이저로 변환합니다.
+#    이제 이 tokenizer 객체는 다른 빠른 토크나이저처럼 동작합니다.
 tokenizer = PreTrainedTokenizerFast(
-    tokenizer_file=tokenizer_file,
-    pad_token="<pad>", # PAD 토큰 명시
-    unk_token="<unk>", # UNK 토큰 명시
-    bos_token="<s>",   # BOS 토큰 명시
-    eos_token="</s>",   # EOS 토큰 명시
+    tokenizer_object=slow_tokenizer,
+    pad_token="<pad>",
+    unk_token="<unk>",
+    bos_token="<s>",
+    eos_token="</s>",
+    cls_token="[CLS]",
+    sep_token="[SEP]",
+    mask_token="[MASK]",
 )
-print(f"커스텀 토크나이저 로딩 완료. 어휘 사전 크기: {len(tokenizer)}")
+print(f"커스텀 토크나이저 로딩 및 변환 완료. 어휘 사전 크기: {len(tokenizer)}")
 
-
-# ✅ 2. KoBERT 모델을 로드합니다.
+# ✅ 4. KoBERT 모델을 로드합니다.
 model = AutoModelForSequenceClassification.from_pretrained(
     "monologg/kobert",
     num_labels=5
 )
 print(f"기존 KoBERT 모델의 임베딩 크기: {model.get_input_embeddings().weight.shape[0]}")
 
-
-# ✅ 3. (매우 중요!) 모델의 임베딩 레이어 크기를 새로운 토크나이저 크기에 맞게 조정합니다.
-#    이 과정은 기존 임베딩 지식을 무효화하고, 새로운 크기에 맞춰 레이어를 사실상 재초기화합니다.
+# ✅ 5. (매우 중요!) 모델의 임베딩 레이어 크기를 새로운 토크나이저 크기에 맞게 조정합니다.
 model.resize_token_embeddings(len(tokenizer))
 print(f"리사이즈된 모델의 임베딩 크기: {model.get_input_embeddings().weight.shape[0]}")
 
