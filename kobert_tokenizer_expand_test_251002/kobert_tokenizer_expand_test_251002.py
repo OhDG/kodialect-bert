@@ -43,7 +43,6 @@ df_all['text'] = df_all['text'].str.replace(r'\([^)]*\)|\[[^)]*\]', '', regex=Tr
 df_all['text'] = df_all['text'].str.replace(r'[^가-힣a-zA-Z0-9.,?! ]', '', regex=True)
 df_all['text'] = df_all['text'].str.strip()
 df_all = df_all[df_all['text'] != '']
-df_all = df_all.head(10000)
 
 print(f"최종 훈련 문장 수: {len(df_all):,}")
 
@@ -52,7 +51,9 @@ print(f"최종 훈련 문장 수: {len(df_all):,}")
 # ==============================================================================
 print("\n===== [2단계] 기존 KoBERT 모델 로딩 =====")
 
-base_model_name = "skt/kobert-base-v1"
+# base_model_name = "skt/kobert-base-v1"
+
+base_model_name = "monologg/kobert"
 # label 정보가 없으면 임시로 num_labels=2 지정
 model = AutoModelForSequenceClassification.from_pretrained(base_model_name, num_labels=2)
 original_tokenizer = AutoTokenizer.from_pretrained(base_model_name)
@@ -130,13 +131,26 @@ model.save_pretrained(save_path)
 
 print(f"확장된 모델과 토크나이저가 '{save_path}'에 저장됨.")
 
-# 검증 문장
-test_sentence = "점심은 잡솼슈? 어데 가노? 마씸 참말이우꽈?"
-tokens_before = AutoTokenizer.from_pretrained(base_model_name).tokenize(test_sentence)
-tokens_after = original_tokenizer.tokenize(test_sentence)
+# 다양한 지역 사투리 문장 샘플
+test_sentences = [
+    "점심은 잡솼슈? 어데 가노? 마씸 참말이우꽈?",   # 혼합 예시
+    "오늘 날씨 진짜 좋다 아이가?",                   # 경상도
+    "그거 뭐라카노? 내가 다 했다 아이가!",          # 경상도
+    "니 집에 언제 올껴?",                          # 전라도
+    "거 참말로 오지게 좋구마잉!",                  # 전라도
+    "어데 감둥?",                                 # 강원도
+    "점심은 잡솼슈? 마씸 참말이우꽈?",              # 제주도
+    "혼저 옵서예, 반갑수다!",                      # 제주도
+    "그려, 오늘 날씨가 참말로 좋당께.",             # 충청도
+    "어이구, 그라믄 안 되지유~"                    # 충청도
+]
 
-print("\n--- 검증 ---")
-print(f"입력 문장: {test_sentence}")
-print(f"[BEFORE] 원본 KoBERT 토큰화: {tokens_before}")
-print(f"[AFTER ] 확장 KoBERT 토큰화: {tokens_after}")
-print(f"UNK BEFORE: {tokens_before.count('[UNK]')}, UNK AFTER: {tokens_after.count('[UNK]')}")
+print("\n--- KoBERT 토크나이저 검증 ---")
+for sentence in test_sentences:
+    tokens_before = AutoTokenizer.from_pretrained(base_model_name).tokenize(sentence)
+    tokens_after = original_tokenizer.tokenize(sentence)
+
+    print(f"\n입력 문장: {sentence}")
+    print(f"[BEFORE] 원본 KoBERT 토큰화: {tokens_before}")
+    print(f"[AFTER ] 확장 KoBERT 토큰화: {tokens_after}")
+    print(f"UNK BEFORE: {tokens_before.count('[UNK]')}, UNK AFTER: {tokens_after.count('[UNK]')}")
