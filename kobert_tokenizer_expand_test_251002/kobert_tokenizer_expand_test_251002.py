@@ -51,9 +51,9 @@ print(f"최종 훈련 문장 수: {len(df_all):,}")
 # ==============================================================================
 print("\n===== [2단계] 기존 KoBERT 모델 로딩 =====")
 
-# base_model_name = "skt/kobert-base-v1"
+base_model_name = "skt/kobert-base-v1"
 
-base_model_name = "monologg/kobert"
+# base_model_name = "monologg/kobert"
 # label 정보가 없으면 임시로 num_labels=2 지정
 model = AutoModelForSequenceClassification.from_pretrained(base_model_name, num_labels=2, trust_remote_code=True)
 original_tokenizer = AutoTokenizer.from_pretrained(base_model_name, trust_remote_code=True)
