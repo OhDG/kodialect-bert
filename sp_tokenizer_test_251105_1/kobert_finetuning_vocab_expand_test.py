@@ -103,6 +103,8 @@ print(f"기존 KoBERT 토크나이저 어휘 사전 크기: {len(tokenizer)}")
 new_tokens = []
 base_vocab = tokenizer.get_vocab()
 
+vocab_file_path = "dialect_spm.vocab"
+
 with open(vocab_file_path, 'r', encoding='utf-8') as f:
     for line in f:
         tok = line.strip().split('\t')[0]
