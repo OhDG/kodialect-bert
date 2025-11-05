@@ -82,39 +82,53 @@ print("\n===== [2단계] 커스텀 토크나이저 로딩 및 모델 리사이�
 tokenizer = AutoTokenizer.from_pretrained("skt/kobert-base-v1", use_fast=True)
 print(f"기존 KoBERT 토크나이저 어휘 사전 크기: {len(tokenizer)}")
 
-# 2️⃣ SentencePiece vocab 불러오기 + 필터링
+# 2️⃣ SentencePiece vocab 불러오기 + 안전 필터링
 new_tokens = []
 base_vocab = tokenizer.get_vocab()
 vocab_file_path = "dialect_spm.vocab"
 
-with open(vocab_file_path, 'r', encoding='utf-8') as f:
+with open(vocab_file_path, "r", encoding="utf-8") as f:
     for line in f:
-        tok = line.strip().split('\t')[0]
+        tok = line.strip().split("\t")[0]
 
-        # 불필요/중복 토큰 필터링
-        if tok in {"<unk>", "<s>", "</s>"}:
+        # 1) SPM 제어/특수토큰 완전 제외
+        if tok in {"<unk>", "<s>", "</s>", "<pad>", "<mask>"}:
             continue
-        if tok.startswith("▁"):
+        # 2) SPM 공백마커 ‘▁’ 제거 버전으로 교체
+        tok = tok.replace("▁", "")
+        if not tok or len(tok) <= 1:
             continue
-        if len(tok) <= 1:
-            continue
+        # 3) 이미 KoBERT에 있는 토큰 제외
         if tok in base_vocab:
             continue
+        # 4) 중복 제거
+        if tok not in new_tokens:
+            new_tokens.append(tok)
 
-        new_tokens.append(tok)
+# # 3️⃣ 새로운 토큰 추가 (이 시점까지는 모델 없음)
+# num_added = tokenizer.add_tokens(new_tokens, special_tokens=False)
+# print(f"새 토큰 추가: {num_added}")
+# print(f"확장된 토크나이저 어휘 사전 크기: {len(tokenizer)}")
 
-# 3️⃣ 새로운 토큰 추가 (이 시점까지는 모델 없음)
-num_added = tokenizer.add_tokens(new_tokens, special_tokens=False)
-print(f"새 토큰 추가: {num_added}")
-print(f"확장된 토크나이저 어휘 사전 크기: {len(tokenizer)}")
+# # 4️⃣ KoBERT 모델 로드
+# model = AutoModelForSequenceClassification.from_pretrained("skt/kobert-base-v1", num_labels=5)
 
-# 4️⃣ KoBERT 모델 로드
+# # 5️⃣ 모델 임베딩 리사이즈 (이 타이밍이 핵심)
+# model.resize_token_embeddings(len(tokenizer))
+# print("모델의 Token Embedding 레이어 리사이즈 완료!")
+# print(f"임베딩 크기: {model.get_input_embeddings().num_embeddings}, 토크나이저 크기: {len(tokenizer)}")
+
+# 1. tokenizer 준비 완료 후 모델 로드
 model = AutoModelForSequenceClassification.from_pretrained("skt/kobert-base-v1", num_labels=5)
 
-# 5️⃣ 모델 임베딩 리사이즈 (이 타이밍이 핵심)
+# 2. 추가된 토큰 수 반영
+num_added = tokenizer.add_tokens(new_tokens)
+print(f"새 토큰 {num_added}개 추가 완료!")
+
+# 3. 반드시 이 시점에서 리사이즈
 model.resize_token_embeddings(len(tokenizer))
-print("모델의 Token Embedding 레이어 리사이즈 완료!")
-print(f"임베딩 크기: {model.get_input_embeddings().num_embeddings}, 토크나이저 크기: {len(tokenizer)}")
+print("임베딩 리사이즈 완료! 크기:", len(tokenizer))
+
 
 
 
