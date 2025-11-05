@@ -84,7 +84,8 @@ extended_model_path = "./KoBERT-Extended-with-Dialect"
 tokenizer = AutoTokenizer.from_pretrained(extended_model_path)
 model = AutoModelForSequenceClassification.from_pretrained(
     extended_model_path,
-    num_labels=5  # 5개 지역 분류
+    num_labels=5,  # 5개 지역 분류
+    ignore_mismatched_sizes=True
 )
 
 print(f"확장된 모델 로딩 완료.")
