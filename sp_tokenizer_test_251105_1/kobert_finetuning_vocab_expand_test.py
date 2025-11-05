@@ -78,71 +78,44 @@ print(f"데이터 로딩 완료: Train {len(train_dataset):,}개, Test {len(test
 # ==============================================================================
 print("\n===== [2단계] 커스텀 토크나이저 로딩 및 모델 리사이즈 시작 =====")
 
-# ✅ 1. 기본 KoBERT 토크나이저를 먼저 로드합니다.
-# tokenizer = AutoTokenizer.from_pretrained("monologg/kobert")
-
+# 1️⃣ KoBERT 토크나이저 로드
 tokenizer = AutoTokenizer.from_pretrained("skt/kobert-base-v1", use_fast=True)
 print(f"기존 KoBERT 토크나이저 어휘 사전 크기: {len(tokenizer)}")
 
-# ✅ 2. SentencePiece로 만든 .vocab 파일에서 새로운 단어들을 읽어옵니다.
-#    (이전에 생성한 'dialect_spm.vocab' 파일이 이 스크립트와 같은 위치에 있어야 합니다.)
-# new_tokens = []
-# vocab_file_path = "dialect_spm.vocab" # SentencePiece로 만든 vocab 파일
-# with open(vocab_file_path, 'r', encoding='utf-8') as f:
-#     for line in f:
-#         token = line.strip().split('\t')[0]
-#         if token not in tokenizer.get_vocab():
-#             new_tokens.append(token)
-
-# # ✅ 3. 기존 토크나이저에 새로운 단어들을 추가합니다.
-# tokenizer.add_tokens(new_tokens)
-# print(f"새로운 사투리 토큰 {len(new_tokens)}개 추가 완료!")
-# print(f"확장된 토크나이저 어휘 사전 크기: {len(tokenizer)}")
-
-# ✅ 2. SentencePiece .vocab 읽기 (필터링 버전)
+# 2️⃣ SentencePiece vocab 불러오기 + 필터링
 new_tokens = []
 base_vocab = tokenizer.get_vocab()
-
 vocab_file_path = "dialect_spm.vocab"
 
 with open(vocab_file_path, 'r', encoding='utf-8') as f:
     for line in f:
         tok = line.strip().split('\t')[0]
 
-        # 1) 제어/특수 토큰 제외
+        # 불필요/중복 토큰 필터링
         if tok in {"<unk>", "<s>", "</s>"}:
             continue
-        # 2) SPM 공백마커로 시작하는 토큰 제외
         if tok.startswith("▁"):
             continue
-        # 3) 너무 짧은 조각 제외
         if len(tok) <= 1:
             continue
-        # 4) 기존 vocab 중복 제외
         if tok in base_vocab:
             continue
 
         new_tokens.append(tok)
 
-# 토큰 추가 & 임베딩 리사이즈
+# 3️⃣ 새로운 토큰 추가 (이 시점까지는 모델 없음)
 num_added = tokenizer.add_tokens(new_tokens, special_tokens=False)
 print(f"새 토큰 추가: {num_added}")
-model.resize_token_embeddings(len(tokenizer))
-print("임베딩 크기:", model.get_input_embeddings().num_embeddings, " | 토크나이저 크기:", len(tokenizer))
+print(f"확장된 토크나이저 어휘 사전 크기: {len(tokenizer)}")
 
-
-
-# ✅ 4. KoBERT 모델을 로드합니다.
-# model = AutoModelForSequenceClassification.from_pretrained(
-#     "monologg/kobert",
-#     num_labels=5
-# )
+# 4️⃣ KoBERT 모델 로드
 model = AutoModelForSequenceClassification.from_pretrained("skt/kobert-base-v1", num_labels=5)
 
-
-# ✅ 5. 모델의 임베딩 레이어 크기를 확장된 토크나이저 크기에 맞게 조정합니다. (매우 중요!)
+# 5️⃣ 모델 임베딩 리사이즈 (이 타이밍이 핵심)
 model.resize_token_embeddings(len(tokenizer))
 print("모델의 Token Embedding 레이어 리사이즈 완료!")
+print(f"임베딩 크기: {model.get_input_embeddings().num_embeddings}, 토크나이저 크기: {len(tokenizer)}")
+
 
 
 # ==============================================================================
