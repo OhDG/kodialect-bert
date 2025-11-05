@@ -86,18 +86,48 @@ print(f"기존 KoBERT 토크나이저 어휘 사전 크기: {len(tokenizer)}")
 
 # ✅ 2. SentencePiece로 만든 .vocab 파일에서 새로운 단어들을 읽어옵니다.
 #    (이전에 생성한 'dialect_spm.vocab' 파일이 이 스크립트와 같은 위치에 있어야 합니다.)
+# new_tokens = []
+# vocab_file_path = "dialect_spm.vocab" # SentencePiece로 만든 vocab 파일
+# with open(vocab_file_path, 'r', encoding='utf-8') as f:
+#     for line in f:
+#         token = line.strip().split('\t')[0]
+#         if token not in tokenizer.get_vocab():
+#             new_tokens.append(token)
+
+# # ✅ 3. 기존 토크나이저에 새로운 단어들을 추가합니다.
+# tokenizer.add_tokens(new_tokens)
+# print(f"새로운 사투리 토큰 {len(new_tokens)}개 추가 완료!")
+# print(f"확장된 토크나이저 어휘 사전 크기: {len(tokenizer)}")
+
+# ✅ 2. SentencePiece .vocab 읽기 (필터링 버전)
 new_tokens = []
-vocab_file_path = "dialect_spm.vocab" # SentencePiece로 만든 vocab 파일
+base_vocab = tokenizer.get_vocab()
+
 with open(vocab_file_path, 'r', encoding='utf-8') as f:
     for line in f:
-        token = line.strip().split('\t')[0]
-        if token not in tokenizer.get_vocab():
-            new_tokens.append(token)
+        tok = line.strip().split('\t')[0]
 
-# ✅ 3. 기존 토크나이저에 새로운 단어들을 추가합니다.
-tokenizer.add_tokens(new_tokens)
-print(f"새로운 사투리 토큰 {len(new_tokens)}개 추가 완료!")
-print(f"확장된 토크나이저 어휘 사전 크기: {len(tokenizer)}")
+        # 1) 제어/특수 토큰 제외
+        if tok in {"<unk>", "<s>", "</s>"}:
+            continue
+        # 2) SPM 공백마커로 시작하는 토큰 제외
+        if tok.startswith("▁"):
+            continue
+        # 3) 너무 짧은 조각 제외
+        if len(tok) <= 1:
+            continue
+        # 4) 기존 vocab 중복 제외
+        if tok in base_vocab:
+            continue
+
+        new_tokens.append(tok)
+
+# 토큰 추가 & 임베딩 리사이즈
+num_added = tokenizer.add_tokens(new_tokens, special_tokens=False)
+print(f"새 토큰 추가: {num_added}")
+model.resize_token_embeddings(len(tokenizer))
+print("임베딩 크기:", model.get_input_embeddings().num_embeddings, " | 토크나이저 크기:", len(tokenizer))
+
 
 
 # ✅ 4. KoBERT 모델을 로드합니다.
@@ -123,6 +153,18 @@ def tokenize_fn(example):
 
 tokenized_train = train_dataset.map(tokenize_fn, batched=True, remove_columns=["text"])
 tokenized_test = test_dataset.map(tokenize_fn, batched=True, remove_columns=["text"])
+
+# 토큰화 이후 안전 점검 (학습 전에!)
+embN = model.get_input_embeddings().num_embeddings
+
+def max_id(ds):
+    # ds['input_ids']는 리스트의 리스트
+    return max(max(row) for row in ds['input_ids'])
+
+print("max train id:", max_id(tokenized_train), " | embN:", embN)
+print("max  test id:", max_id(tokenized_test),  " | embN:", embN)
+assert max_id(tokenized_train) < embN and max_id(tokenized_test) < embN, "토큰 id가 임베딩 크기를 초과합니다!"
+
 
 # ==============================================================================
 # ### 4단계: 가중치 적용 Trainer 및 학습 설정
