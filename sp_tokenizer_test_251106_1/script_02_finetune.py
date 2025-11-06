@@ -50,12 +50,19 @@ for region, subdir in region_dirs.items():
                                 all_labels.append(region_label[region])
             except Exception as e:
                 print(f"⚠️ 파일 오류 발생: {file_path} - {e}")
-    # ‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️
-        break  # ✅✅✅ L62: 이 'break'가 없습니다. (모든 데이터 로딩)
-    # ‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️‼️
+            
+            # ✅✅✅ L35: 빠른 테스트를 위해 1개 파일만 로드
+            print(f"    -> {region} 1개 파일 로딩 완료.")
+            break
 
 df_all = pd.DataFrame({"text": all_texts, "label": all_labels})
-train_df, test_df = train_test_split(df_all, test_size=0.2, stratify=df_all["label"], random_state=42)
+# (데이터가 너무 적으면 stratify가 실패할 수 있으므로, 테스트 데이터가 0개여도 진행)
+if len(df_all) > 10:
+    train_df, test_df = train_test_split(df_all, test_size=0.2, stratify=df_all["label"], random_state=42)
+else:
+    train_df = df_all
+    test_df = df_all.copy() # 그냥 복사
+    
 train_dataset = Dataset.from_pandas(train_df.reset_index(drop=True))
 test_dataset = Dataset.from_pandas(test_df.reset_index(drop=True))
 print(f"데이터 로딩 완료: Train {len(train_dataset):,}개, Test {len(test_dataset):,}개")
@@ -85,7 +92,6 @@ def tokenize_fn(example):
 tokenized_train = train_dataset.map(tokenize_fn, batched=True, remove_columns=["text"])
 tokenized_test = test_dataset.map(tokenize_fn, batched=True, remove_columns=["text"])
 
-# ✅✅✅ --- 추가된 검증 단계 (L98) --- ✅✅✅
 print("\n===== [3.5단계] 토큰 ID 및 임베딩 크기 검증 =====")
 emb_size = model.get_input_embeddings().num_embeddings
 print(f"모델의 실제 임베딩 크기 (num_embeddings): {emb_size}")
@@ -111,7 +117,6 @@ if max_train_id >= emb_size or max_test_id >= emb_size:
     exit()
 else:
     print("✅ 검증 통과: 모든 토큰 ID가 모델 임베딩 크기보다 작습니다.")
-# ✅✅✅ --- 검증 종료 --- ✅✅✅
 
 # ==============================================================================
 # ### 4단계: 가중치 적용 Trainer 및 학습 설정
@@ -137,14 +142,24 @@ def compute_metrics(p):
     pred = np.argmax(pred, axis=1)
     return {"accuracy": accuracy_score(y_true=labels, y_pred=pred)}
 
+# ✅✅✅ L161: 작은 데이터셋에 맞게 파라미터 조정
 training_args = TrainingArguments(
-    output_dir="./results_custom_tokenizer", num_train_epochs=20,
-    per_device_train_batch_size=64, per_device_eval_batch_size=128,
-    learning_rate=5e-5, warmup_steps=300, weight_decay=0.01,
-    logging_dir="./logs_custom_tokenizer", logging_steps=100,
-    evaluation_strategy="steps", eval_steps=100, save_total_limit=2,
-    save_steps=100, load_best_model_at_end=True,
-    metric_for_best_model="accuracy", greater_is_better=True,
+    output_dir="./results_custom_tokenizer", 
+    num_train_epochs=5, # ✅ Epochs 20 -> 5 (빠른 테스트)
+    per_device_train_batch_size=64, 
+    per_device_eval_batch_size=128,
+    learning_rate=5e-5, 
+    warmup_steps=50, # ✅ 300 -> 50
+    weight_decay=0.01,
+    logging_dir="./logs_custom_tokenizer", 
+    logging_steps=25, # ✅ 100 -> 25 (약 1 epoch마다)
+    evaluation_strategy="steps", 
+    eval_steps=25, # ✅ 100 -> 25 (약 1 epoch마다)
+    save_total_limit=2,
+    save_steps=25, # ✅ 100 -> 25
+    load_best_model_at_end=True,
+    metric_for_best_model="accuracy", 
+    greater_is_better=True,
     report_to="tensorboard",
 )
 trainer = WeightedTrainer(
@@ -175,8 +190,8 @@ model_save_path = "./my_best_dialect_model_custom_tokenizer"
 trainer.save_model(model_save_path)
 tokenizer.save_pretrained(model_save_path)
 
-loaded_tokenizer = AutoTokenizer.from_pretrained(model_path)
-loaded_model = AutoModelForSequenceClassification.from_pretrained(model_path)
+loaded_tokenizer = AutoTokenizer.from_pretrained(model_save_path)
+loaded_model = AutoModelForSequenceClassification.from_pretrained(model_save_path)
 loaded_model.eval()
 
 sentence = "거시기 저짝 가보랑께"
