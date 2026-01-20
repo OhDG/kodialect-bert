@@ -24,7 +24,7 @@ def train_bert_tokenizer():
     tokenizer.train(
         files=[corpus_file],
         vocab_size=32000, # 보통 BERT는 3만 내외 사용
-        min_frequency=2,  # 최소 2번 이상 등장해야 어휘 사전에 추가
+        min_frequency=5,  # 최소 2번 이상 등장해야 어휘 사전에 추가 -> 670만개 문장 : 5로 늘림
         show_progress=True,
         special_tokens=["[PAD]", "[UNK]", "[CLS]", "[SEP]", "[MASK]"],
         wordpieces_prefix="##",
