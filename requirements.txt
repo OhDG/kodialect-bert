@@ -1,0 +1,10 @@
+# 기초 라이브러리
+numpy
+pandas
+
+# 토크나이저 및 모델 관련 (HuggingFace)
+tokenizers==0.15.0
+transformers==4.36.0
+
+# 기타 유틸리티
+tqdm
