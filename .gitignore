@@ -208,3 +208,7 @@ __marimo__/
 
 dialect_bert_tokenizer
 dialect_corpus.txt
+
+my_dialect_bert_model
+results
+train_data_sampled.csv
