@@ -48,9 +48,9 @@ six==1.17.0
 sympy==1.14.0
 threadpoolctl==3.6.0
 tokenizers==0.22.2
-torch==2.7.1+cu118
-torchaudio==2.7.1+cu118
-torchvision==0.22.1+cu118
+# torch==2.7.1+cu118 pip install torch==2.7.1 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+# torchaudio==2.7.1+cu118
+# torchvision==0.22.1+cu118
 tqdm==4.67.1
 transformers==5.0.0
 typer-slim==0.21.1
