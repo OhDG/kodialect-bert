@@ -222,15 +222,14 @@ def train_full():
 )
 
     trainer = WeightedTrainer(
-        model=model,
-        args=training_args,
-        train_dataset=train_ds,
-        eval_dataset=val_ds,
-        tokenizer=tokenizer,
-        data_collator=data_collator,
-        compute_metrics=compute_metrics,
-        class_weights=class_weights
-    )
+    model=model,
+    args=training_args,
+    train_dataset=train_ds,
+    eval_dataset=val_ds,
+    data_collator=data_collator,
+    compute_metrics=compute_metrics,
+    class_weights=class_weights
+)
 
     print("\n--- 전체 학습 시작 ---")
     trainer.train()
