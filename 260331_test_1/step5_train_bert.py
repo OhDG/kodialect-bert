@@ -1,100 +1,247 @@
-import torch
 import os
-from transformers import BertForSequenceClassification, BertTokenizer, Trainer, TrainingArguments
-from datasets import load_dataset
+import random
+import numpy as np
+import pandas as pd
+import torch
+import torch.nn as nn
+
+from datasets import Dataset
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, f1_score
+from transformers import (
+    BertForSequenceClassification,
+    BertTokenizer,
+    Trainer,
+    TrainingArguments,
+    DataCollatorWithPadding,
+    set_seed,
+)
+
+def print_label_distribution(df, name):
+    label_to_region = {
+        0: "강원도",
+        1: "경상도",
+        2: "전라도",
+        3: "제주도",
+        4: "충청도"
+    }
+
+    print(f"\n--- {name} label 분포 ---")
+    counts = df["label"].value_counts().sort_index()
+    total = len(df)
+
+    for label in range(5):
+        count = int(counts.get(label, 0))
+        ratio = (count / total * 100) if total > 0 else 0
+        print(f"{label_to_region[label]} ({label}): {count:,}개 ({ratio:.2f}%)")
+    print(f"총합: {total:,}개")
+
+
+class WeightedTrainer(Trainer):
+    def __init__(self, class_weights=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.class_weights = class_weights
+
+    def compute_loss(self, model, inputs, return_outputs=False, num_items_in_batch=None):
+        labels = inputs.pop("labels")
+        outputs = model(**inputs)
+        logits = outputs.get("logits")
+
+        loss_fct = nn.CrossEntropyLoss(weight=self.class_weights.to(logits.device))
+        loss = loss_fct(logits, labels)
+
+        return (loss, outputs) if return_outputs else loss
+
+
+def compute_metrics(eval_pred):
+    logits, labels = eval_pred
+    preds = np.argmax(logits, axis=-1)
+
+    acc = accuracy_score(labels, preds)
+    macro_f1 = f1_score(labels, preds, average="macro")
+
+    return {
+        "accuracy": acc,
+        "macro_f1": macro_f1,
+    }
+
 
 def train_full():
-    # 1. 환경 설정
     model_name = "bert-base-multilingual-cased"
     tokenizer_path = "./dialect_bert_tokenizer"
-    data_path = "train_data_full.csv" # 생성한 전체 데이터 파일
-    output_dir = "./dialect_bert_full_results"
-    
+    data_path = "train_data_full.csv"
+    output_dir = "./dialect_bert_full_results_fast"
+    final_model_dir = "./my_dialect_bert_final_fast"
+    split_dir = os.path.join(output_dir, "data_splits")
+
+    os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(split_dir, exist_ok=True)
+    os.makedirs(final_model_dir, exist_ok=True)
+
+    seed = 42
+    set_seed(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"🚀 학습 시작 장치: {device}")
 
-    # 2. 대용량 데이터 로드 (스트리밍 방식은 아니지만 메모리 맵핑을 지원함)
-    # csv 파일을 datasets 라이브러리로 로드하면 메모리 효율이 매우 좋습니다.
-    dataset = load_dataset("csv", data_files=data_path)["train"]
-    
-    # 3. 데이터셋 분할 (99% 학습 / 1% 검증 - 670만 개라 1%만 해도 충분)
-    dataset = dataset.train_test_split(test_size=0.01, seed=42)
-    train_ds = dataset["train"]
-    val_ds = dataset["test"]
+    print("\n--- CSV 로드 중 ---")
+    df = pd.read_csv(data_path, encoding="utf-8-sig")
 
-    # 4. 토크나이저 준비
+    df = df[["text", "label"]].copy()
+    df["text"] = df["text"].astype(str).str.strip()
+    df["label"] = df["label"].astype(int)
+    df = df.dropna(subset=["text", "label"])
+    df = df[df["text"].str.len() > 0].reset_index(drop=True)
+
+    print_label_distribution(df, "전체 데이터")
+
+    print("\n--- 90% 학습용 / 10% 홀드아웃 분리 중 ---")
+    train90_df, holdout10_df = train_test_split(
+        df,
+        test_size=0.10,
+        random_state=seed,
+        stratify=df["label"]
+    )
+
+    train_df, val_df = train_test_split(
+        train90_df,
+        test_size=0.01,
+        random_state=seed,
+        stratify=train90_df["label"]
+    )
+
+    train_df = train_df.reset_index(drop=True)
+    val_df = val_df.reset_index(drop=True)
+    holdout10_df = holdout10_df.reset_index(drop=True)
+
+    print_label_distribution(train_df, "최종 train")
+    print_label_distribution(val_df, "최종 validation")
+    print_label_distribution(holdout10_df, "최종 holdout(다음 단계 평가용)")
+
+    train_csv_path = os.path.join(split_dir, "train_90_inner.csv")
+    val_csv_path = os.path.join(split_dir, "val_from_train.csv")
+    holdout_csv_path = os.path.join(split_dir, "holdout_10.csv")
+
+    train_df.to_csv(train_csv_path, index=False, encoding="utf-8-sig")
+    val_df.to_csv(val_csv_path, index=False, encoding="utf-8-sig")
+    holdout10_df.to_csv(holdout_csv_path, index=False, encoding="utf-8-sig")
+
+    print(f"\n✅ train 저장: {train_csv_path}")
+    print(f"✅ val 저장: {val_csv_path}")
+    print(f"✅ holdout 저장: {holdout_csv_path}")
+
+    train_counts = train_df["label"].value_counts().sort_index()
+    num_labels = 5
+    total_train = len(train_df)
+
+    class_weights = []
+    for label in range(num_labels):
+        count = int(train_counts.get(label, 0))
+        if count == 0:
+            raise ValueError(f"label {label}의 학습 데이터가 0개입니다.")
+        weight = total_train / (num_labels * count)
+        class_weights.append(weight)
+
+    class_weights = torch.tensor(class_weights, dtype=torch.float)
+    print(f"\n클래스 가중치: {class_weights.tolist()}")
+
     tokenizer = BertTokenizer.from_pretrained(tokenizer_path, do_lower_case=False)
 
+    train_ds = Dataset.from_pandas(train_df[["text", "label"]], preserve_index=False)
+    val_ds = Dataset.from_pandas(val_df[["text", "label"]], preserve_index=False)
+
+    train_ds = train_ds.rename_column("label", "labels")
+    val_ds = val_ds.rename_column("label", "labels")
+
     def tokenize_function(examples):
-        return tokenizer(examples["text"], padding="max_length", truncation=True, max_length=128)
+        return tokenizer(
+            examples["text"],
+            truncation=True,
+            max_length=96
+        )
 
-    # 5. 토크나이징 (num_proc을 늘려 멀티 프로세싱으로 속도 향상)
-    print("--- 데이터 토크나이징 중 (멀티코어 사용) ---")
-    train_ds = train_ds.map(tokenize_function, batched=True, num_proc=8, remove_columns=["text"])
-    val_ds = val_ds.map(tokenize_function, batched=True, num_proc=8, remove_columns=["text"])
+    print("\n--- 데이터 토크나이징 중 ---")
+    train_ds = train_ds.map(
+        tokenize_function,
+        batched=True,
+        num_proc=8,
+        remove_columns=["text"]
+    )
+    val_ds = val_ds.map(
+        tokenize_function,
+        batched=True,
+        num_proc=8,
+        remove_columns=["text"]
+    )
 
-    # 6. 모델 설정
-    model = BertForSequenceClassification.from_pretrained(model_name, num_labels=5)
-    model.to(device)
+    data_collator = DataCollatorWithPadding(
+        tokenizer=tokenizer,
+        pad_to_multiple_of=8 if torch.cuda.is_available() else None
+    )
 
-    # 7. 전체 학습용 인자 설정
-    # training_args = TrainingArguments(
-    #     output_dir=output_dir,
-    #     eval_strategy="steps",        # 대용량일 땐 epoch가 너무 기니 steps 단위로 평가
-    #     eval_steps=5000,               # 5000 스텝마다 평가
-    #     save_strategy="steps",
-    #     save_steps=5000,               # 5000 스텝마다 체크포인트 저장 (중요!)
-    #     save_total_limit=3,            # 체크포인트는 최근 3개만 유지 (용량 확보)
-    #     learning_rate=2e-5,
-    #     per_device_train_batch_size=32, # GPU 메모리 봐서 16~64 사이 조절
-    #     gradient_accumulation_steps=2,  # 배치 사이즈를 키우는 효과 (메모리 절약)
-    #     num_train_epochs=3,             # 보통 3~5 epoch 권장
-    #     weight_decay=0.01,
-    #     logging_dir="./logs",
-    #     logging_steps=100,
-    #     fp16=True,                      # GPU가 지원한다면 Mixed Precision으로 속도 2배 향상
-    #     load_best_model_at_end=True,    # 가장 성능 좋은 체크포인트를 최종 모델로 선택
-    # )
+    model = BertForSequenceClassification.from_pretrained(
+        model_name,
+        num_labels=num_labels
+    )
 
     training_args = TrainingArguments(
         output_dir=output_dir,
-        eval_strategy="steps",
-        eval_steps=10000,              # 670만 개이므로 평가를 너무 자주 하면 느려짐
-        save_strategy="steps",
-        save_steps=10000,
-        save_total_limit=5,
-        learning_rate=2e-5,
-        
-        # --- A6000 맞춤 설정 ---
-        per_device_train_batch_size=128, # 48GB VRAM이므로 64~128까지 과감하게 키워보세요.
-        gradient_accumulation_steps=1,   # 배치가 충분히 크다면 1로 설정해 속도 극대화
-        # -----------------------
+        overwrite_output_dir=True,
 
-        num_train_epochs=3,
+        evaluation_strategy="epoch",
+        save_strategy="epoch",
+        save_total_limit=2,
+
+        learning_rate=3e-5,
+
+        per_device_train_batch_size=128,
+        per_device_eval_batch_size=256,
+        gradient_accumulation_steps=1,
+
+        num_train_epochs=2,
         weight_decay=0.01,
-        logging_dir="./logs",
-        logging_steps=500,
-        fp16=True,                       # A6000은 Tensor Core 성능이 좋아 fp16 필수입니다.
-        dataloader_num_workers=8,        # 데이터 로딩 속도를 높이기 위해 CPU 코어 활용
-        group_by_length=True,            # 문장 길이가 비슷한 것끼리 묶어 패딩 최소화 (속도 향상)
+
+        logging_dir=os.path.join(output_dir, "logs"),
+        logging_steps=2000,
+
+        fp16=torch.cuda.is_available(),
+        dataloader_num_workers=8,
+        group_by_length=True,
+
+        load_best_model_at_end=True,
+        metric_for_best_model="macro_f1",
+        greater_is_better=True,
+
+        seed=seed,
+        data_seed=seed,
+        report_to="none"
     )
 
-
-    # 8. Trainer 실행
-    trainer = Trainer(
+    trainer = WeightedTrainer(
         model=model,
         args=training_args,
         train_dataset=train_ds,
         eval_dataset=val_ds,
+        tokenizer=tokenizer,
+        data_collator=data_collator,
+        compute_metrics=compute_metrics,
+        class_weights=class_weights
     )
 
-    print("--- 670만 개 데이터 전체 학습 시작 ---")
+    print("\n--- 전체 학습 시작 ---")
     trainer.train()
-    
-    # 9. 최종 모델 저장
-    model.save_pretrained("./my_dialect_bert_final")
-    tokenizer.save_pretrained("./my_dialect_bert_final")
-    print("✅ 최종 모델 저장 완료: ./my_dialect_bert_final")
+
+    trainer.save_model(final_model_dir)
+    tokenizer.save_pretrained(final_model_dir)
+
+    print(f"\n✅ 최종 모델 저장 완료: {final_model_dir}")
+    print(f"✅ 다음 단계 평가용 홀드아웃 파일: {holdout_csv_path}")
+
 
 if __name__ == "__main__":
     train_full()
