@@ -190,37 +190,36 @@ def train_full():
     )
 
     training_args = TrainingArguments(
-        output_dir=output_dir,
-        overwrite_output_dir=True,
+    output_dir=output_dir,
 
-        evaluation_strategy="epoch",
-        save_strategy="epoch",
-        save_total_limit=2,
+    eval_strategy="epoch",
+    save_strategy="epoch",
+    save_total_limit=2,
 
-        learning_rate=3e-5,
+    learning_rate=3e-5,
 
-        per_device_train_batch_size=128,
-        per_device_eval_batch_size=256,
-        gradient_accumulation_steps=1,
+    per_device_train_batch_size=128,
+    per_device_eval_batch_size=256,
+    gradient_accumulation_steps=1,
 
-        num_train_epochs=2,
-        weight_decay=0.01,
+    num_train_epochs=2,
+    weight_decay=0.01,
 
-        logging_dir=os.path.join(output_dir, "logs"),
-        logging_steps=2000,
+    logging_dir=os.path.join(output_dir, "logs"),
+    logging_steps=2000,
 
-        fp16=torch.cuda.is_available(),
-        dataloader_num_workers=8,
-        group_by_length=True,
+    fp16=torch.cuda.is_available(),
+    dataloader_num_workers=8,
+    group_by_length=True,
 
-        load_best_model_at_end=True,
-        metric_for_best_model="macro_f1",
-        greater_is_better=True,
+    load_best_model_at_end=True,
+    metric_for_best_model="macro_f1",
+    greater_is_better=True,
 
-        seed=seed,
-        data_seed=seed,
-        report_to="none"
-    )
+    seed=seed,
+    data_seed=seed,
+    report_to="none"
+)
 
     trainer = WeightedTrainer(
         model=model,
