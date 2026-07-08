@@ -219,3 +219,12 @@ my_dialect_bert_final
 train_data_full.csv
 
 260630_test_1/
+
+# 260708_test_1 generated experiment artifacts
+260708_test_1/dialect_bert_tokenizer/
+260708_test_1/*_mlm*/
+260708_test_1/*_classifier*/
+260708_test_1/smoke_*/
+260708_test_1/logs/
+260708_test_1/**/checkpoint-*/
+260708_test_1/**/runs/
