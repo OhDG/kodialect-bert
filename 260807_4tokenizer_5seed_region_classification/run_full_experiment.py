@@ -1,4 +1,5 @@
 import argparse
+import codecs
 import csv
 import json
 import os
@@ -105,21 +106,30 @@ def run_stage(
     start = time.perf_counter()
     return_code = -1
     try:
-        with log_path.open("w", encoding="utf-8") as log_file:
+        with log_path.open("w", encoding="utf-8", newline="") as log_file:
             process = subprocess.Popen(
                 command,
                 cwd=ROOT,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                bufsize=1,
+                bufsize=0,
             )
             assert process.stdout is not None
-            for line in process.stdout:
-                print(line, end="", flush=True)
-                log_file.write(line)
+            decoder = codecs.getincrementaldecoder("utf-8")(errors="replace")
+            while True:
+                chunk = os.read(process.stdout.fileno(), 4096)
+                if not chunk:
+                    break
+                output = decoder.decode(chunk)
+                sys.stdout.write(output)
+                sys.stdout.flush()
+                log_file.write(output)
+                log_file.flush()
+            remaining = decoder.decode(b"", final=True)
+            if remaining:
+                sys.stdout.write(remaining)
+                sys.stdout.flush()
+                log_file.write(remaining)
                 log_file.flush()
             return_code = process.wait()
     finally:
@@ -139,7 +149,15 @@ def run_stage(
 
 def preflight(args: argparse.Namespace) -> None:
     missing = []
-    for package in ("torch", "transformers", "datasets", "tokenizers", "sentencepiece"):
+    for package in (
+        "torch",
+        "transformers",
+        "datasets",
+        "tokenizers",
+        "accelerate",
+        "sentencepiece",
+        "tqdm",
+    ):
         try:
             __import__(package)
         except ImportError:
