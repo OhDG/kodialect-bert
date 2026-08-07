@@ -1,0 +1,401 @@
+import argparse
+import csv
+import json
+import os
+import statistics
+import subprocess
+import sys
+import time
+from pathlib import Path
+from typing import Dict, List, Optional
+
+from experiment_common import TOKENIZER_SPECS, latest_complete_checkpoint, save_json
+
+
+ROOT = Path(__file__).resolve().parent
+DATA_SCRIPT = ROOT / "step1_prepare_data_80_10_10.py"
+TOKENIZER_SCRIPT = ROOT / "step2_train_dialect_tokenizer.py"
+MLM_SCRIPT = ROOT / "step3_pretrain_small_bert_mlm.py"
+CLASSIFIER_SCRIPT = ROOT / "step4_finetune_region_classifier.py"
+SUMMARY_SCRIPT = ROOT / "step5_summarize_results.py"
+GPU_MONITOR_SCRIPT = ROOT / "gpu_monitor.py"
+
+DEFAULT_TOKENIZERS = ["dialect", "klue", "kobert", "mbert"]
+DEFAULT_SEEDS = [13, 21, 42, 87, 100]
+
+
+def display_command(command: List[str]) -> str:
+    return " ".join(subprocess.list2cmdline([part]) for part in command)
+
+
+def summarize_gpu_csv(csv_path: Path, wall_seconds: float) -> Dict[str, object]:
+    rows = []
+    if csv_path.is_file():
+        with csv_path.open("r", encoding="utf-8", newline="") as f:
+            for row in csv.DictReader(f):
+                try:
+                    rows.append(
+                        {
+                            "gpu_utilization_percent": float(row["gpu_utilization_percent"]),
+                            "memory_used_mib": float(row["memory_used_mib"]),
+                            "memory_total_mib": float(row["memory_total_mib"]),
+                            "power_draw_w": float(row["power_draw_w"]),
+                            "temperature_c": float(row["temperature_c"]),
+                        }
+                    )
+                except (KeyError, TypeError, ValueError):
+                    continue
+    if not rows:
+        return {"samples": 0, "wall_seconds": wall_seconds}
+    average_power = statistics.mean(row["power_draw_w"] for row in rows)
+    active_rows = [row for row in rows if row["gpu_utilization_percent"] >= 5.0]
+    return {
+        "samples": len(rows),
+        "wall_seconds": wall_seconds,
+        "average_gpu_utilization_percent": statistics.mean(
+            row["gpu_utilization_percent"] for row in rows
+        ),
+        "p95_gpu_utilization_percent": sorted(row["gpu_utilization_percent"] for row in rows)[
+            max(0, int(len(rows) * 0.95) - 1)
+        ],
+        "peak_memory_used_mib": max(row["memory_used_mib"] for row in rows),
+        "memory_total_mib": max(row["memory_total_mib"] for row in rows),
+        "average_power_w": average_power,
+        "estimated_energy_wh": average_power * wall_seconds / 3600.0,
+        "maximum_temperature_c": max(row["temperature_c"] for row in rows),
+        "active_samples": len(active_rows),
+        "active_fraction": len(active_rows) / len(rows),
+        "average_active_gpu_utilization_percent": statistics.mean(
+            row["gpu_utilization_percent"] for row in active_rows
+        )
+        if active_rows
+        else 0.0,
+    }
+
+
+def run_stage(
+    stage_name: str,
+    command: List[str],
+    logs_dir: Path,
+    monitor_gpu: bool,
+) -> None:
+    logs_dir.mkdir(parents=True, exist_ok=True)
+    log_path = logs_dir / f"{stage_name}.log"
+    gpu_csv_path = logs_dir / f"{stage_name}_gpu.csv"
+    gpu_summary_path = logs_dir / f"{stage_name}_gpu_summary.json"
+    print("\n" + "=" * 100, flush=True)
+    print(f"STAGE: {stage_name}", flush=True)
+    print(display_command(command), flush=True)
+    print("=" * 100 + "\n", flush=True)
+
+    monitor_process: Optional[subprocess.Popen] = None
+    if monitor_gpu:
+        monitor_process = subprocess.Popen(
+            [
+                sys.executable,
+                str(GPU_MONITOR_SCRIPT),
+                "--output",
+                str(gpu_csv_path),
+                "--interval",
+                "1.0",
+            ],
+            cwd=ROOT,
+        )
+
+    start = time.perf_counter()
+    return_code = -1
+    try:
+        with log_path.open("w", encoding="utf-8") as log_file:
+            process = subprocess.Popen(
+                command,
+                cwd=ROOT,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                bufsize=1,
+            )
+            assert process.stdout is not None
+            for line in process.stdout:
+                print(line, end="", flush=True)
+                log_file.write(line)
+                log_file.flush()
+            return_code = process.wait()
+    finally:
+        wall_seconds = time.perf_counter() - start
+        if monitor_process is not None:
+            monitor_process.terminate()
+            try:
+                monitor_process.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                monitor_process.kill()
+        if monitor_gpu:
+            save_json(gpu_summary_path, summarize_gpu_csv(gpu_csv_path, wall_seconds))
+
+    if return_code != 0:
+        raise subprocess.CalledProcessError(return_code, command)
+
+
+def preflight(args: argparse.Namespace) -> None:
+    missing = []
+    for package in ("torch", "transformers", "datasets", "tokenizers", "sentencepiece"):
+        try:
+            __import__(package)
+        except ImportError:
+            missing.append(package)
+    if missing:
+        raise RuntimeError(
+            f"Missing packages: {', '.join(missing)}. "
+            "Run: python -m pip install -r requirements_260807.txt"
+        )
+
+    import torch
+
+    if not torch.cuda.is_available():
+        raise RuntimeError("CUDA GPU is required for the full experiment.")
+    device = torch.cuda.get_device_name(0)
+    memory_gb = torch.cuda.get_device_properties(0).total_memory / (1024**3)
+    print(f"[PREFLIGHT] GPU: {device} ({memory_gb:.1f} GB)")
+    if memory_gb < 40 and not args.smoke:
+        raise RuntimeError(
+            "The default profile expects an RTX A6000-class 48 GB GPU. "
+            "Use --smoke for a small check or adjust batch sizes in the runner."
+        )
+    if not Path(args.source_manifest).is_file() and not (ROOT / args.source_manifest).is_file():
+        raise FileNotFoundError(f"Source manifest not found: {args.source_manifest}")
+
+
+def completed_mlm(output_dir: Path) -> bool:
+    metadata = output_dir / "mlm_pretraining_metadata.json"
+    final_model = output_dir / "final_model" / "config.json"
+    return metadata.is_file() and final_model.is_file()
+
+
+def completed_classifier(output_dir: Path) -> bool:
+    return (
+        (output_dir / "experiment_metadata.json").is_file()
+        and (output_dir / "test_classification_report.json").is_file()
+        and (output_dir / "final_model" / "config.json").is_file()
+    )
+
+
+def mlm_batch_profile(tokenizer_name: str, smoke: bool) -> Dict[str, int]:
+    if smoke:
+        return {"train": 8, "eval": 16, "accumulation": 1}
+    if tokenizer_name == "mbert":
+        return {"train": 128, "eval": 256, "accumulation": 2}
+    return {"train": 256, "eval": 512, "accumulation": 1}
+
+
+def data_command(args: argparse.Namespace) -> List[str]:
+    command = [
+        sys.executable,
+        str(DATA_SCRIPT),
+        "--source_manifest",
+        args.source_manifest,
+        "--output_dir",
+        "./data",
+        "--seed",
+        "42",
+    ]
+    if args.overwrite:
+        command.append("--overwrite")
+    return command
+
+
+def tokenizer_command(args: argparse.Namespace) -> List[str]:
+    command = [
+        sys.executable,
+        str(TOKENIZER_SCRIPT),
+        "--corpus",
+        "./data/corpus/dialect_train_corpus.txt",
+        "--output_dir",
+        "./dialect_bert_tokenizer",
+    ]
+    if args.overwrite:
+        command.append("--overwrite")
+    return command
+
+
+def mlm_command(args: argparse.Namespace, tokenizer_name: str, output_dir: Path) -> List[str]:
+    batch = mlm_batch_profile(tokenizer_name, args.smoke)
+    command = [
+        sys.executable,
+        str(MLM_SCRIPT),
+        "--tokenizer_name",
+        tokenizer_name,
+        "--output_dir",
+        str(output_dir),
+        "--train_batch_size",
+        str(batch["train"]),
+        "--eval_batch_size",
+        str(batch["eval"]),
+        "--gradient_accumulation_steps",
+        str(batch["accumulation"]),
+        "--dataloader_num_workers",
+        str(args.dataloader_num_workers),
+        "--preprocessing_num_workers",
+        str(args.preprocessing_num_workers),
+        "--tokenize_batch_size",
+        str(args.tokenize_batch_size),
+        "--seed",
+        "42",
+    ]
+    if args.overwrite:
+        command.append("--overwrite_output_dir")
+    elif not completed_mlm(output_dir):
+        checkpoint = latest_complete_checkpoint(output_dir)
+        if checkpoint is not None:
+            command.extend(["--resume_from_checkpoint", str(checkpoint)])
+    if args.smoke:
+        command.extend(
+            [
+                "--num_train_epochs",
+                "1",
+                "--max_train_samples",
+                "2048",
+                "--max_validation_samples",
+                "512",
+                "--logging_steps",
+                "10",
+            ]
+        )
+    return command
+
+
+def classifier_command(
+    args: argparse.Namespace,
+    tokenizer_name: str,
+    seed: int,
+    mlm_dir: Path,
+    output_dir: Path,
+) -> List[str]:
+    command = [
+        sys.executable,
+        str(CLASSIFIER_SCRIPT),
+        "--mlm_model_dir",
+        str(mlm_dir / "final_model"),
+        "--tokenized_cache_dir",
+        str(ROOT / "cache" / "classification_tokenized" / tokenizer_name),
+        "--output_dir",
+        str(output_dir),
+        "--train_batch_size",
+        "16" if args.smoke else "256",
+        "--eval_batch_size",
+        "32" if args.smoke else "2048",
+        "--dataloader_num_workers",
+        str(args.dataloader_num_workers),
+        "--preprocessing_num_workers",
+        str(args.preprocessing_num_workers),
+        "--tokenize_batch_size",
+        str(args.tokenize_batch_size),
+        "--seed",
+        str(seed),
+    ]
+    if args.overwrite:
+        command.append("--overwrite_output_dir")
+    elif not completed_classifier(output_dir):
+        checkpoint = latest_complete_checkpoint(output_dir)
+        if checkpoint is not None:
+            command.extend(["--resume_from_checkpoint", str(checkpoint)])
+    if args.smoke:
+        command.extend(
+            [
+                "--num_train_epochs",
+                "1",
+                "--max_train_samples",
+                "2048",
+                "--max_validation_samples",
+                "512",
+                "--max_test_samples",
+                "512",
+                "--logging_steps",
+                "10",
+            ]
+        )
+    return command
+
+
+def main() -> None:
+    args = parse_args()
+    os.chdir(ROOT)
+    preflight(args)
+    logs_dir = ROOT / ("logs_smoke" if args.smoke else "logs")
+    outputs_root = ROOT / ("outputs_smoke" if args.smoke else "outputs")
+    results_dir = ROOT / ("results_smoke" if args.smoke else "results")
+    logs_dir.mkdir(parents=True, exist_ok=True)
+    outputs_root.mkdir(parents=True, exist_ok=True)
+
+    run_stage("01_prepare_data", data_command(args), logs_dir, monitor_gpu=False)
+    run_stage("02_train_dialect_tokenizer", tokenizer_command(args), logs_dir, monitor_gpu=False)
+
+    for tokenizer_name in args.tokenizers:
+        mlm_dir = outputs_root / "mlm" / tokenizer_name
+        if completed_mlm(mlm_dir) and not args.overwrite:
+            print(f"[SKIP] Completed MLM: {tokenizer_name}")
+        else:
+            run_stage(
+                f"03_mlm_{tokenizer_name}",
+                mlm_command(args, tokenizer_name, mlm_dir),
+                logs_dir,
+                monitor_gpu=True,
+            )
+
+        for seed in args.seeds:
+            classifier_dir = outputs_root / "classifiers" / tokenizer_name / f"seed_{seed}"
+            if completed_classifier(classifier_dir) and not args.overwrite:
+                print(f"[SKIP] Completed classifier: {tokenizer_name}, seed={seed}")
+                continue
+            run_stage(
+                f"04_classifier_{tokenizer_name}_seed_{seed}",
+                classifier_command(args, tokenizer_name, seed, mlm_dir, classifier_dir),
+                logs_dir,
+                monitor_gpu=True,
+            )
+
+    summary_command = [
+        sys.executable,
+        str(SUMMARY_SCRIPT),
+        "--output_root",
+        str(outputs_root),
+        "--result_dir",
+        str(results_dir),
+        "--logs_dir",
+        str(logs_dir),
+        "--tokenizers",
+        *args.tokenizers,
+        "--seeds",
+        *[str(seed) for seed in args.seeds],
+    ]
+    run_stage("05_summarize_results", summary_command, logs_dir, monitor_gpu=False)
+    save_json(
+        results_dir / "pipeline_completed.json",
+        {
+            "completed": True,
+            "tokenizers": args.tokenizers,
+            "seeds": args.seeds,
+            "smoke": args.smoke,
+        },
+    )
+    print("\n[OK] Full experiment completed.")
+    print(f"Final report: {results_dir / 'final_results.md'}")
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Run the full A6000 four-tokenizer, five-seed experiment with one command."
+    )
+    parser.add_argument("--source_manifest", default="../260630_test_1/corpus_split_manifest.csv")
+    parser.add_argument("--tokenizers", nargs="+", choices=sorted(TOKENIZER_SPECS), default=DEFAULT_TOKENIZERS)
+    parser.add_argument("--seeds", nargs="+", type=int, default=DEFAULT_SEEDS)
+    parser.add_argument("--dataloader_num_workers", type=int, default=8)
+    parser.add_argument("--preprocessing_num_workers", type=int, default=16)
+    parser.add_argument("--tokenize_batch_size", type=int, default=8000)
+    parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument("--smoke", action="store_true")
+    return parser.parse_args()
+
+
+if __name__ == "__main__":
+    main()

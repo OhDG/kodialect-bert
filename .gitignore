@@ -228,3 +228,31 @@ train_data_full.csv
 260708_test_1/logs/
 260708_test_1/**/checkpoint-*/
 260708_test_1/**/runs/
+
+# 260709_test_1 generated experiment artifacts
+260709_test_1/*_mlm*/
+260709_test_1/*_classifier*/
+260709_test_1/smoke_*/
+260709_test_1/logs/
+260709_test_1/**/checkpoint-*/
+260709_test_1/**/runs/
+260709_test_1/tokenizer_comparison.*
+
+# 260710_test1 generated experiment artifacts
+260710_test1/*_classifier*/
+260710_test1/smoke_*/
+260710_test1/logs/
+260710_test1/**/checkpoint-*/
+260710_test1/**/runs/
+260710_test1/tokenizer_accuracy_comparison.*
+
+# 260807 four-tokenizer, five-seed generated artifacts
+260807_4tokenizer_5seed_region_classification/data/
+260807_4tokenizer_5seed_region_classification/dialect_bert_tokenizer/
+260807_4tokenizer_5seed_region_classification/cache/
+260807_4tokenizer_5seed_region_classification/outputs/
+260807_4tokenizer_5seed_region_classification/outputs_smoke/
+260807_4tokenizer_5seed_region_classification/logs/
+260807_4tokenizer_5seed_region_classification/logs_smoke/
+260807_4tokenizer_5seed_region_classification/results/
+260807_4tokenizer_5seed_region_classification/results_smoke/
