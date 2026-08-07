@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from experiment_common import TOKENIZER_SPECS, latest_complete_checkpoint, save_json
+from experiment_common import REGION_LABELS, TOKENIZER_SPECS, latest_complete_checkpoint, save_json
 
 
 ROOT = Path(__file__).resolve().parent
@@ -23,10 +23,71 @@ GPU_MONITOR_SCRIPT = ROOT / "gpu_monitor.py"
 
 DEFAULT_TOKENIZERS = ["dialect", "klue", "kobert", "mbert"]
 DEFAULT_SEEDS = [13, 21, 42, 87, 100]
+DEFAULT_SOURCE_MANIFEST = "../260630_test_1/corpus_split_manifest.csv"
+
+
+def create_smoke_fixture() -> Path:
+    fixture_dir = ROOT / "smoke_fixture"
+    fixture_dir.mkdir(parents=True, exist_ok=True)
+    manifest_path = fixture_dir / "corpus_split_manifest.csv"
+    rows = []
+    for region_index, region in enumerate(REGION_LABELS):
+        for file_index in range(3):
+            json_path = fixture_dir / f"region_{region_index}_file_{file_index}.json"
+            utterances = [
+                {
+                    "dialect_form": (
+                        f"{region} smoke sample {file_index} sentence {sentence_index}. "
+                        f"region marker {region_index}."
+                    )
+                }
+                for sentence_index in range(32)
+            ]
+            with json_path.open("w", encoding="utf-8") as f:
+                json.dump({"utterance": utterances}, f, ensure_ascii=False)
+            rows.append(
+                {
+                    "region": region,
+                    "source_group": "synthetic_smoke",
+                    "source_type": "base",
+                    "path": str(json_path.resolve()),
+                    "num_sentences": len(utterances),
+                }
+            )
+    with manifest_path.open("w", encoding="utf-8-sig", newline="") as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=["region", "source_group", "source_type", "path", "num_sentences"],
+        )
+        writer.writeheader()
+        writer.writerows(rows)
+    print(f"[SMOKE] Synthetic source manifest: {manifest_path}")
+    return manifest_path
+
+
+def data_root(args: argparse.Namespace) -> str:
+    return "./data_smoke" if args.smoke else "./data"
+
+
+def dialect_tokenizer_root(args: argparse.Namespace) -> str:
+    return "./dialect_bert_tokenizer_smoke" if args.smoke else "./dialect_bert_tokenizer"
+
+
+def cache_root(args: argparse.Namespace) -> Path:
+    if args.smoke and os.name == "nt":
+        return Path(ROOT.anchor) / "kd260807_cache"
+    return ROOT / ("cache_smoke" if args.smoke else "cache")
 
 
 def display_command(command: List[str]) -> str:
     return " ".join(subprocess.list2cmdline([part]) for part in command)
+
+
+def write_console(output: str) -> None:
+    encoding = sys.stdout.encoding or "utf-8"
+    safe_output = output.encode(encoding, errors="replace").decode(encoding)
+    sys.stdout.write(safe_output)
+    sys.stdout.flush()
 
 
 def summarize_gpu_csv(csv_path: Path, wall_seconds: float) -> Dict[str, object]:
@@ -107,12 +168,16 @@ def run_stage(
     return_code = -1
     try:
         with log_path.open("w", encoding="utf-8", newline="") as log_file:
+            child_env = os.environ.copy()
+            child_env["PYTHONUTF8"] = "1"
+            child_env["PYTHONIOENCODING"] = "utf-8"
             process = subprocess.Popen(
                 command,
                 cwd=ROOT,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
                 bufsize=0,
+                env=child_env,
             )
             assert process.stdout is not None
             decoder = codecs.getincrementaldecoder("utf-8")(errors="replace")
@@ -121,14 +186,12 @@ def run_stage(
                 if not chunk:
                     break
                 output = decoder.decode(chunk)
-                sys.stdout.write(output)
-                sys.stdout.flush()
+                write_console(output)
                 log_file.write(output)
                 log_file.flush()
             remaining = decoder.decode(b"", final=True)
             if remaining:
-                sys.stdout.write(remaining)
-                sys.stdout.flush()
+                write_console(remaining)
                 log_file.write(remaining)
                 log_file.flush()
             return_code = process.wait()
@@ -213,7 +276,7 @@ def data_command(args: argparse.Namespace) -> List[str]:
         "--source_manifest",
         args.source_manifest,
         "--output_dir",
-        "./data",
+        data_root(args),
         "--seed",
         "42",
     ]
@@ -223,21 +286,34 @@ def data_command(args: argparse.Namespace) -> List[str]:
 
 
 def tokenizer_command(args: argparse.Namespace) -> List[str]:
+    data_dir = data_root(args)
     command = [
         sys.executable,
         str(TOKENIZER_SCRIPT),
         "--corpus",
-        "./data/corpus/dialect_train_corpus.txt",
+        f"{data_dir}/corpus/dialect_train_corpus.txt",
         "--output_dir",
-        "./dialect_bert_tokenizer",
+        dialect_tokenizer_root(args),
     ]
     if args.overwrite:
         command.append("--overwrite")
+    if args.smoke:
+        command.extend(
+            [
+                "--vocab_size",
+                "100",
+                "--min_frequency",
+                "1",
+                "--limit_alphabet",
+                "100",
+            ]
+        )
     return command
 
 
 def mlm_command(args: argparse.Namespace, tokenizer_name: str, output_dir: Path) -> List[str]:
     batch = mlm_batch_profile(tokenizer_name, args.smoke)
+    data_dir = data_root(args)
     command = [
         sys.executable,
         str(MLM_SCRIPT),
@@ -245,6 +321,14 @@ def mlm_command(args: argparse.Namespace, tokenizer_name: str, output_dir: Path)
         tokenizer_name,
         "--output_dir",
         str(output_dir),
+        "--dialect_tokenizer_dir",
+        dialect_tokenizer_root(args),
+        "--train_corpus",
+        f"{data_dir}/corpus/dialect_train_corpus.txt",
+        "--validation_corpus",
+        f"{data_dir}/corpus/dialect_validation_corpus.txt",
+        "--dataset_cache_dir",
+        str(cache_root(args) / "huggingface_datasets"),
         "--train_batch_size",
         str(batch["train"]),
         "--eval_batch_size",
@@ -252,11 +336,11 @@ def mlm_command(args: argparse.Namespace, tokenizer_name: str, output_dir: Path)
         "--gradient_accumulation_steps",
         str(batch["accumulation"]),
         "--dataloader_num_workers",
-        str(args.dataloader_num_workers),
+        str(0 if args.smoke else args.dataloader_num_workers),
         "--preprocessing_num_workers",
-        str(args.preprocessing_num_workers),
+        str(1 if args.smoke else args.preprocessing_num_workers),
         "--tokenize_batch_size",
-        str(args.tokenize_batch_size),
+        str(128 if args.smoke else args.tokenize_batch_size),
         "--seed",
         "42",
     ]
@@ -289,25 +373,35 @@ def classifier_command(
     mlm_dir: Path,
     output_dir: Path,
 ) -> List[str]:
+    data_dir = data_root(args)
+    experiment_cache = cache_root(args)
     command = [
         sys.executable,
         str(CLASSIFIER_SCRIPT),
         "--mlm_model_dir",
         str(mlm_dir / "final_model"),
         "--tokenized_cache_dir",
-        str(ROOT / "cache" / "classification_tokenized" / tokenizer_name),
+        str(experiment_cache / "classification_tokenized" / tokenizer_name),
+        "--dataset_cache_dir",
+        str(experiment_cache / "huggingface_datasets"),
         "--output_dir",
         str(output_dir),
+        "--train_tsv",
+        f"{data_dir}/region_classification/dialect_region_train.tsv",
+        "--validation_tsv",
+        f"{data_dir}/region_classification/dialect_region_validation.tsv",
+        "--test_tsv",
+        f"{data_dir}/region_classification/dialect_region_test.tsv",
         "--train_batch_size",
         "16" if args.smoke else "256",
         "--eval_batch_size",
         "32" if args.smoke else "2048",
         "--dataloader_num_workers",
-        str(args.dataloader_num_workers),
+        str(0 if args.smoke else args.dataloader_num_workers),
         "--preprocessing_num_workers",
-        str(args.preprocessing_num_workers),
+        str(1 if args.smoke else args.preprocessing_num_workers),
         "--tokenize_batch_size",
-        str(args.tokenize_batch_size),
+        str(128 if args.smoke else args.tokenize_batch_size),
         "--seed",
         str(seed),
     ]
@@ -338,6 +432,8 @@ def classifier_command(
 def main() -> None:
     args = parse_args()
     os.chdir(ROOT)
+    if args.smoke and args.source_manifest == DEFAULT_SOURCE_MANIFEST:
+        args.source_manifest = str(create_smoke_fixture())
     preflight(args)
     logs_dir = ROOT / ("logs_smoke" if args.smoke else "logs")
     outputs_root = ROOT / ("outputs_smoke" if args.smoke else "outputs")
@@ -404,7 +500,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Run the full A6000 four-tokenizer, five-seed experiment with one command."
     )
-    parser.add_argument("--source_manifest", default="../260630_test_1/corpus_split_manifest.csv")
+    parser.add_argument("--source_manifest", default=DEFAULT_SOURCE_MANIFEST)
     parser.add_argument("--tokenizers", nargs="+", choices=sorted(TOKENIZER_SPECS), default=DEFAULT_TOKENIZERS)
     parser.add_argument("--seeds", nargs="+", type=int, default=DEFAULT_SEEDS)
     parser.add_argument("--dataloader_num_workers", type=int, default=8)

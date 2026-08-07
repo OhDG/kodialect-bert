@@ -34,6 +34,7 @@ def load_tokenized_corpus(args: argparse.Namespace, tokenizer):
         "train": args.train_corpus,
         "validation": args.validation_corpus,
     }
+    Path(args.dataset_cache_dir).mkdir(parents=True, exist_ok=True)
     raw = load_dataset("text", data_files=data_files, cache_dir=args.dataset_cache_dir)
     if args.max_train_samples is not None:
         raw["train"] = raw["train"].select(range(min(args.max_train_samples, len(raw["train"]))))

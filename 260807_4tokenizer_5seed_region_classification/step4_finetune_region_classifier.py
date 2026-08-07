@@ -76,6 +76,7 @@ def load_or_create_tokenized_dataset(args: argparse.Namespace, tokenizer):
         raise ImportError("Install datasets before fine-tuning.") from exc
 
     cache_dir = Path(args.tokenized_cache_dir)
+    Path(args.dataset_cache_dir).mkdir(parents=True, exist_ok=True)
     metadata_path = cache_dir / "cache_metadata.json"
     expected = expected_cache_metadata(args, tokenizer)
     if (cache_dir / "dataset_dict.json").is_file() and metadata_path.is_file():
