@@ -261,12 +261,20 @@ def completed_classifier(output_dir: Path) -> bool:
     )
 
 
-def mlm_batch_profile(tokenizer_name: str, smoke: bool) -> Dict[str, int]:
+def mlm_batch_profile(tokenizer_name: str, smoke: bool, args: argparse.Namespace) -> Dict[str, int]:
     if smoke:
         return {"train": 8, "eval": 16, "accumulation": 1}
     if tokenizer_name == "mbert":
-        return {"train": 128, "eval": 256, "accumulation": 2}
-    return {"train": 256, "eval": 512, "accumulation": 1}
+        return {
+            "train": args.mlm_train_batch_mbert,
+            "eval": args.mlm_eval_batch_mbert,
+            "accumulation": args.mlm_grad_accum_mbert,
+        }
+    return {
+        "train": args.mlm_train_batch_others,
+        "eval": args.mlm_eval_batch_others,
+        "accumulation": args.mlm_grad_accum_others,
+    }
 
 
 def data_command(args: argparse.Namespace) -> List[str]:
@@ -312,7 +320,7 @@ def tokenizer_command(args: argparse.Namespace) -> List[str]:
 
 
 def mlm_command(args: argparse.Namespace, tokenizer_name: str, output_dir: Path) -> List[str]:
-    batch = mlm_batch_profile(tokenizer_name, args.smoke)
+    batch = mlm_batch_profile(tokenizer_name, args.smoke, args)
     data_dir = data_root(args)
     command = [
         sys.executable,
@@ -393,13 +401,15 @@ def classifier_command(
         "--test_tsv",
         f"{data_dir}/region_classification/dialect_region_test.tsv",
         "--train_batch_size",
-        "16" if args.smoke else "256",
+        "16" if args.smoke else str(args.classifier_train_batch),
         "--eval_batch_size",
-        "32" if args.smoke else "2048",
+        "32" if args.smoke else str(args.classifier_eval_batch),
         "--dataloader_num_workers",
         str(0 if args.smoke else args.dataloader_num_workers),
         "--preprocessing_num_workers",
         str(1 if args.smoke else args.preprocessing_num_workers),
+        "--gradient_accumulation_steps",
+        "1" if args.smoke else str(args.classifier_gradient_accumulation_steps),
         "--tokenize_batch_size",
         str(128 if args.smoke else args.tokenize_batch_size),
         "--seed",
@@ -508,6 +518,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--tokenize_batch_size", type=int, default=8000)
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--smoke", action="store_true")
+    parser.add_argument("--mlm_train_batch_others", type=int, default=256)
+    parser.add_argument("--mlm_eval_batch_others", type=int, default=512)
+    parser.add_argument("--mlm_grad_accum_others", type=int, default=1)
+    parser.add_argument("--mlm_train_batch_mbert", type=int, default=128)
+    parser.add_argument("--mlm_eval_batch_mbert", type=int, default=256)
+    parser.add_argument("--mlm_grad_accum_mbert", type=int, default=2)
+    parser.add_argument("--classifier_train_batch", type=int, default=256)
+    parser.add_argument("--classifier_eval_batch", type=int, default=2048)
+    parser.add_argument("--classifier_gradient_accumulation_steps", type=int, default=1)
     return parser.parse_args()
 
 
