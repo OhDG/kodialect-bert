@@ -19,8 +19,10 @@ card. Two confounds were identified in that local run:
    allocating (using) almost the same amount as KLUE-BERT (~8.5 GB both), which
    pushed it into Windows' slow shared-GPU-memory fallback and inflated its wall
    time disproportionately. A 48 GB card removes the physical pressure that
-   triggers this, and `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` (set
-   automatically by the runner) further reduces fragmentation risk.
+   triggers this. (`PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` was tried
+   as an extra fragmentation-reduction measure but was dropped: this server's
+   PyTorch build raises a hard error on that key instead of ignoring it, so the
+   runner no longer sets it.)
 
 Everything else — data split, preprocessing, tokenizer vocabulary size (32,000),
 model architecture, epochs, learning rate, warmup, weight decay, effective batch
@@ -65,9 +67,6 @@ doing this if you want it, since it would also require rewording Table 4-5/4-6.
 - `--dataloader_num_workers 16` and `--preprocessing_num_workers 16` (defaults;
   check `nproc` on the server and raise if you have more cores idle).
 - `--tokenize_batch_size 8000` (defaults).
-- `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True` set automatically for every
-  subprocess the runner launches (reduces allocator fragmentation; harmless no-op
-  on PyTorch builds that don't recognize it).
 - `--classifier_eval_batch_size 4096` — evaluation has no gradients/optimizer
   state, so it is much cheaper per sample than training; this is set higher than
   the training batch specifically to speed up the ~713K-sentence Test evaluation.

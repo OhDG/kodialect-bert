@@ -168,11 +168,6 @@ def run_stage(
             child_env["PYTHONUTF8"] = "1"
             child_env["PYTHONIOENCODING"] = "utf-8"
             child_env.setdefault("TOKENIZERS_PARALLELISM", "false")
-            # Reduces PyTorch caching-allocator fragmentation under long-running,
-            # variable-length-batch training (this is what inflated reserved-vs-
-            # allocated memory in the earlier 12 GB run). Harmless no-op on
-            # PyTorch versions that do not recognize the option.
-            child_env.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
             process = subprocess.Popen(
                 command,
                 cwd=ROOT,
