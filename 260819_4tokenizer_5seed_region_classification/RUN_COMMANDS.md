@@ -13,42 +13,50 @@ to exploit this A6000's full 48 GB, and crashed twice:
    cross-entropy logits tensor needs 31.25 GiB by itself, causing a real
    `CUDA out of memory` at the first epoch-end evaluation.
 
-This directory abandons that redesign entirely. It is `260807`'s **original,
-unmodified batch profile and hyperparameters** (the ones a real server-trained
-run of that design has already produced usable encoders with — the same
-encoders `260811_dialect_to_standard_4tokenizer_seq2seq` already fine-tunes
-against). The GPU measurement method is upgraded to process-only: it now
-records only this experiment's own process (via `pynvml`, ported from the
-`260814_..._local` / `260818` work) instead of whole-device `nvidia-smi`
-snapshots that could include other users' jobs on a shared GPU.
+This directory abandons that redesign entirely. It runs `260807`'s **original,
+unmodified batch profile and hyperparameters**, upgraded to process-only GPU
+measurement: it records only this experiment's own process (via `pynvml`,
+ported from the `260814_..._local` / `260818` work) instead of whole-device
+`nvidia-smi` snapshots that can include other users' jobs on a shared GPU.
 
-**MLM pretraining is skipped by default.** `260807`'s server run already
-produced real, completed `outputs/mlm/<tokenizer>/final_model` encoders — the
-exact ones `260811` (translation) already fine-tunes against. Retraining MLM
-here would cost several more hours per tokenizer just to reproduce something
-that, given CUDA's run-to-run nondeterminism, wouldn't even come out
-bit-identical to the original — a fresh retrain is *less* faithful to "the same
-encoder" than just reusing the real file. So by default, `run_full_experiment.py`
-copies `260807`'s `final_model/` + `mlm_pretraining_metadata.json` for each
-tokenizer straight into this run's `outputs/mlm/<tokenizer>/` and skips both the
-dialect-tokenizer-training stage and MLM pretraining entirely — only the
-classifier fine-tuning stage (4 tokenizers × 5 seeds) actually runs and gets
-fresh process-only GPU measurement. This also means classification and
-translation now share the literal same encoder files, not just the same design.
+**This directory trains everything from scratch by default — dialect tokenizer,
+all four MLM encoders, and all four×five classifier fine-tuning runs.** An
+earlier version of this directory defaulted to reusing `260807`'s already-
+completed encoders instead (skipping MLM entirely), on the reasoning that
+`260811` (translation) already fine-tunes against those same encoders. That
+reasoning about the *encoder weights* still holds — reuse wouldn't have
+corrupted anything trained on top of them. But `260807`'s own
+`results/final_results.md` turned out to show clear whole-device GPU
+measurement contamination:
 
-The one thing NOT freshly measured under reuse: the MLM row in
-`results/efficiency_summary.csv` / `final_results.md` is copied from `260807`'s
-original whole-device GPU log (if present there), not re-measured by this run's
-process-only monitor. Note this caveat if quoting MLM-stage GPU numbers from a
-reused run. To force a full from-scratch run instead (fresh MLM stage too, with
-process-only measurement throughout):
+- dialect's MLM peak VRAM: 47.38 / 47.40 GB — ~100% of the card's total
+  capacity, for a 23M-parameter model.
+- dialect's classifier peak VRAM: 24.11 GB vs KLUE's *identical-architecture*
+  12.95 GB.
+- dialect's classifier time: 2.45 ± 0.93 h — a 38% relative standard
+  deviation across 5 seeds that should be near-deterministic (KLUE's was
+  1.69 ± 0.00 h).
+- mBERT's classifier peak VRAM (11.24 GB) was the *lowest* of the four despite
+  having the largest vocabulary and thus the largest embedding table.
+
+Cross-checked against `260814_..._local`'s own process-only measurements
+(2.4–3.1 GB classifier peak allocated across all four tokenizers, no anomalies),
+the gap is too large to be allocator caching — something else was sharing the
+GPU during at least parts of that run. Given that, we're training everything
+here from scratch instead of reusing, so every number in this run — MLM and
+classifier both — comes from this run's own clean, process-only measurement,
+not inherited from a run with contamination in its telemetry.
+
+`260807`'s **Accuracy/Macro F1 tables** (not the GPU efficiency table) are still
+usable as-is if needed for a quick cross-check — GPU contention slows wall time,
+it doesn't corrupt the trained weights or the resulting metrics. But this run is
+the one to cite for both the final performance numbers and any efficiency claim.
+
+Reuse is still available as an opt-in if ever needed again:
 
 ```bash
-python run_full_experiment.py --reuse_mlm_from ""
+python run_full_experiment.py --reuse_mlm_from "../260807_4tokenizer_5seed_region_classification"
 ```
-
-Nothing about `260811` (translation) needs to change — it already reuses real,
-successfully-trained `260807` encoders and is unaffected by any of this.
 
 ## Experiment design (identical to 260807)
 
@@ -93,12 +101,12 @@ The smoke command still prepares the 80/10/10 data when it does not already exis
 python run_full_experiment.py
 ```
 
-By default this copies the four MLM encoders from `260807` (see above) and runs
-only data prep + classifier fine-tuning (4 tokenizers × 5 seeds = 20 Trainer
-runs) — no dialect-tokenizer-training stage, no MLM pretraining stage. The
-runner is resumable regardless: re-entering the same command skips completed
-runs and resumes the latest complete Trainer checkpoint for an interrupted
-stage.
+This runs the full pipeline: data prep, dialect tokenizer training, MLM
+pretraining for all four tokenizers, then classifier fine-tuning (4 tokenizers
+× 5 seeds = 20 Trainer runs) — all with process-only GPU measurement. The
+runner is resumable: re-entering the same command skips completed runs and
+resumes the latest complete Trainer checkpoint for an interrupted stage. Do not
+add `--overwrite` to a normal resume command — it discards completed stages.
 
 For a persistent visible terminal session:
 
@@ -113,11 +121,7 @@ Detach with `Ctrl-b`, then `d`. Reattach with:
 tmux attach -t dialect_260819
 ```
 
-## A6000 profile (unchanged from 260807 — no redesign this time)
-
-The MLM row only applies if you force a from-scratch run with
-`--reuse_mlm_from ""`; the default reuse path never invokes the MLM script at
-all, so these batch sizes only matter in that fallback case.
+## A6000 profile (unchanged from 260807 — no redesign)
 
 | Stage | Tokenizer | Micro batch | Accumulation | Effective batch | Eval batch |
 | --- | --- | ---: | ---: | ---: | ---: |
@@ -152,14 +156,13 @@ results/overall_summary.csv   Mean and standard deviation
 results/efficiency_summary.csv Process-only GPU/runtime summary
 ```
 
-Each classifier stage records process-only peak allocated/reserved VRAM and
-process SM utilization in `logs/04_classifier_*_gpu_summary.json` and in
-`outputs/classifiers/.../experiment_metadata.json` (`process_gpu_memory`, from
+Every MLM and classifier stage records process-only peak allocated/reserved
+VRAM and process SM utilization in `logs/*_gpu_summary.json` and in
+`outputs/.../*_metadata.json` (`process_gpu_memory`, from
 `torch.cuda.max_memory_allocated`/`max_memory_reserved` inside the training
-process itself — cannot include another user's job even on a shared card). Under
-the default reuse path, `logs/03_mlm_*_gpu_summary.json` (if present) is copied
-verbatim from `260807` and reflects that run's own whole-device measurement, not
-this run's process-only method — see "Why this directory exists" above.
+process itself — cannot include another user's job even on a shared card).
+Verify this held in practice by checking `nvml_process_vram_supported: true` in
+the `*_gpu_summary.json` files after the run.
 
 ## Important interpretation
 
@@ -167,8 +170,10 @@ The primary controlled comparison is dialect versus KLUE because both use a 32,0
 KoBERT and mBERT are native-vocabulary reference tokenizers; their native vocabulary sizes change the embedding and MLM
 output parameter counts. All four receive equal MLM epochs, classification seeds, data, and effective batch sizes.
 
-GPU measurements in this run are process-scoped (this experiment's PID and its
-descendants only), unlike 260807's original whole-device `nvidia-smi` snapshots.
-If another job runs on the same GPU concurrently, it cannot leak into these
-numbers — verify by checking `nvml_process_vram_supported: true` in the
-`*_gpu_summary.json` files after the run.
+If another job runs on this GPU concurrently during this run, process-only
+measurement means it cannot leak into these numbers the way it apparently did
+in `260807`'s original run — but wall-clock *time* can still be slowed by
+contention even though memory/utilization readings stay clean. If any
+tokenizer's stage timing looks anomalous relative to the others despite clean
+VRAM readings, check whether another job was running on the GPU at the same
+time before treating the timing as informative.

@@ -25,10 +25,19 @@ GPU_MONITOR_SCRIPT = ROOT / "gpu_monitor.py"
 DEFAULT_TOKENIZERS = ["dialect", "klue", "kobert", "mbert"]
 DEFAULT_SEEDS = [13, 21, 42, 87, 100]
 DEFAULT_SOURCE_MANIFEST = "../260630_test_1/corpus_split_manifest.csv"
-# Reuse the already-trained MLM encoders 260811 (translation) already fine-tunes
-# against, instead of retraining MLM from scratch. Pass --reuse_mlm_from "" to
-# disable this and train all four tokenizers from scratch as 260807 originally did.
-DEFAULT_REUSE_MLM_FROM = "../260807_4tokenizer_5seed_region_classification"
+# 260807's own final_results.md showed clear whole-device GPU contamination
+# (dialect MLM pinned at 47.38/47.40 GB — ~100% of device capacity; dialect
+# classifier peak VRAM 24.11 GB vs klue's identical-architecture 12.95 GB;
+# dialect classifier time 2.45+/-0.93h, a 38% relative std across seeds that
+# should be near-deterministic). Reusing those encoders would still be valid
+# for the trained weights themselves, but we're training everything from
+# scratch here instead so every number in this run — MLM and classifier both
+# — comes from this run's own clean, process-only measurement, not inherited
+# from a run that shared the GPU with something else.
+# Pass --reuse_mlm_from "../260807_4tokenizer_5seed_region_classification" to
+# switch back to reusing those encoders (skips MLM/tokenizer training) if
+# ever needed again.
+DEFAULT_REUSE_MLM_FROM = ""
 
 
 def create_smoke_fixture() -> Path:
