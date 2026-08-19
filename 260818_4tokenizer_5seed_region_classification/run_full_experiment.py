@@ -293,9 +293,15 @@ def completed_classifier(output_dir: Path) -> bool:
 def mlm_batch_profile(tokenizer_name: str, smoke: bool) -> Dict[str, int]:
     if smoke:
         return {"train": 8, "eval": 16, "accumulation": 1}
+    # eval_batch_size is NOT cheap for MLM: cross-entropy over the full vocab
+    # materializes a [eval_batch, seq_len, vocab_size] logits tensor, so cost
+    # scales with eval_batch * vocab_size, not eval_batch alone. At seq_len=128:
+    #   32,000-way vocab @ eval=2048 -> 31.25 GiB (confirmed OOM on a 47 GB card)
+    #   32,000-way vocab @ eval=256  ->  3.91 GiB
+    #   119,547-way vocab @ eval=64  ->  3.65 GiB
     if tokenizer_name in LARGE_VOCAB_TOKENIZERS:
-        return {"train": 128, "eval": 512, "accumulation": 2}
-    return {"train": 256, "eval": 2048, "accumulation": 1}
+        return {"train": 128, "eval": 64, "accumulation": 2}
+    return {"train": 256, "eval": 256, "accumulation": 1}
 
 
 def data_command(args: argparse.Namespace) -> List[str]:

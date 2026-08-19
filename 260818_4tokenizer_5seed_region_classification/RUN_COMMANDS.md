@@ -37,9 +37,21 @@ Target: RTX A6000 48 GB (`nvidia-smi` confirmed idle, 0 other processes).
 
 | Stage | Tokenizer | Micro batch | Accumulation | Effective batch | Eval batch |
 | --- | --- | ---: | ---: | ---: | ---: |
-| MLM | dialect / klue / kobert | 256 | 1 | 256 | 2,048 |
-| MLM | mbert | 128 | 2 | 256 | 512 |
+| MLM | dialect / klue / kobert | 256 | 1 | 256 | 256 |
+| MLM | mbert | 128 | 2 | 256 | 64 |
 | Classification | all four | 256 | 1 | 256 | 4,096 |
+
+**MLM eval batch is capped tightly, unlike train batch or the classifier's eval
+batch.** The MLM head computes cross-entropy over the full vocabulary, so a single
+eval forward pass materializes a `[eval_batch, seq_len, vocab_size]` logits tensor —
+cost scales with `eval_batch × vocab_size`, not `eval_batch` alone. An earlier
+version of this profile used eval=2,048 (32k vocab) and eval=512 (mBERT's 119k
+vocab), which need ~31.25 GiB and ~29.19 GiB respectively for that one tensor —
+confirmed by an actual `CUDA out of memory` crash on the dialect MLM run's
+end-of-epoch evaluation. The values above (256 / 64) cost ~3.9 GiB and ~3.65 GiB
+instead, leaving large margin. The classifier's eval=4,096 does not have this
+problem — its output is only 5-way (region logits), so its peak eval memory is
+driven by ordinary attention/FFN activations, estimated at ~11 GiB worst case.
 
 The MLM split is not a hardware workaround: mBERT's 119,547-token vocabulary makes
 the `[batch, seq_len, vocab_size]` logits tensor in the MLM head far larger than the
