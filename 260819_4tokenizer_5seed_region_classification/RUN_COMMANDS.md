@@ -140,6 +140,49 @@ were as cheap as a bigger GPU makes train batch; it isn't, because vocab size
 (not GPU class) sets the ceiling here. Do not raise these two eval batch values
 without recomputing the logits tensor size first.
 
+## Changed vs identity subset analysis (post-hoc, no retraining)
+
+The translation experiment (260811) reports metrics separately for sentences
+whose dialect form actually differs from the standard form. `step6` adds the
+same breakdown here, and it does **not** require retraining anything:
+
+* Every classifier run already saved its full per-row test predictions to
+  `outputs/classifiers/<tokenizer>/seed_<seed>/test_predictions.npz`.
+* `Trainer.predict` uses a sequential sampler and `group_by_length` is `False`,
+  so those arrays are in the exact row order of `dialect_region_test.tsv`.
+* `step6` rebuilds the `is_changed` flag per row straight from the source JSON
+  files and re-slices the saved predictions.
+
+Run it after the main pipeline finishes:
+
+```bash
+python step6_changed_subset_analysis.py
+```
+
+It refuses to produce numbers unless alignment is provably correct: it compares
+every rebuilt text against the TSV `text` column and every saved `labels` array
+against the TSV `label` column, and aborts on the first mismatch. The rebuilt
+flags are cached to `results/changed_flags_cache.npz`, so re-runs (for example
+with `--definition raw`) skip the ~36,000-file JSON scan; pass `--rebuild` to
+force a fresh scan.
+
+Two definitions of "changed" are available:
+
+| Flag | Compares | Use |
+| --- | --- | --- |
+| `--definition clean` (default) | The two forms after the classifier's own cleaning (bracket removal, character whitelist) | Reflects what the model actually received |
+| `--definition raw` | The two forms after NFKC + whitespace normalization only | Matches 260811's definition, for cross-experiment comparability |
+
+Unlike 260811 — which could only use files carrying an `utterance` array — this
+covers the full test split, because single-utterance transcript files expose
+`transcription.standard` alongside `transcription.dialect`. Any row with no
+standard form at all is excluded from both subsets and counted separately in
+the report.
+
+Outputs: `results/changed_subset_results.md` and `results/changed_subset_results.json`.
+The "All test sentences" table in that report is a sanity check — it should
+reproduce `final_results.md` exactly.
+
 ## Outputs
 
 ```text
@@ -154,6 +197,9 @@ results/final_results.json    Full aggregated result
 results/overall_by_seed.csv   Per-seed Test metrics
 results/overall_summary.csv   Mean and standard deviation
 results/efficiency_summary.csv Process-only GPU/runtime summary
+results/changed_subset_results.md  Changed vs identity subset breakdown (step6)
+results/changed_subset_results.json Same, full detail
+results/changed_flags_cache.npz   Cached per-row changed flags (step6)
 ```
 
 Every MLM and classifier stage records process-only peak allocated/reserved
