@@ -1,0 +1,1104 @@
+{
+  "completed": true,
+  "started_utc": "2026-10-12T11:57:11.692417+00:00",
+  "finished_utc": "2026-10-12T12:03:33.498978+00:00",
+  "scope": "All selected base JSON files: new four regions and old Jeolla only.",
+  "unit": "Utterance rows, NOT counts of parenthesis occurrences.",
+  "source_hashes_verified": true,
+  "built_data_counts_reconciled": true,
+  "round_definition": "Literal ASCII ( or ) in the raw field before normalization.",
+  "pair_pattern": "(?<!\\()\\(([^()]*)\\)\\s*/\\s*\\(([^()]*)\\)(?!\\))",
+  "interpretation": "A surface-pattern census; not all parentheses are erroneous. Each side of a simple pair excludes round parentheses, but the pair may occur inside a larger parenthetical span. Pair sides are compared after NFKC and whitespace normalization.",
+  "totals": {
+    "files": 34213,
+    "utterance_rows": 11445413,
+    "form_nonempty": 11445413,
+    "form_with_open_round": 3574058,
+    "form_with_round": 3574109,
+    "form_with_square": 75,
+    "form_with_fullwidth_round": 0,
+    "form_with_pair_pattern": 3338528,
+    "form_with_different_pair_sides": 3334443,
+    "form_with_double_round": 336147,
+    "form_unbalanced_round": 773,
+    "dialect_form_nonempty": 11445413,
+    "dialect_form_with_open_round": 436236,
+    "dialect_form_with_round": 436355,
+    "dialect_form_with_square": 66,
+    "dialect_form_with_fullwidth_round": 0,
+    "dialect_form_with_pair_pattern": 99986,
+    "dialect_form_with_different_pair_sides": 99864,
+    "dialect_form_with_double_round": 335650,
+    "classification_valid": 11422629,
+    "classification_empty": 22784,
+    "classification_empty_with_round": 22726,
+    "standard_form_nonempty": 11445413,
+    "standard_form_with_open_round": 434698,
+    "standard_form_with_round": 434830,
+    "standard_form_with_square": 74,
+    "standard_form_with_fullwidth_round": 0,
+    "standard_form_with_pair_pattern": 99969,
+    "standard_form_with_different_pair_sides": 99854,
+    "standard_form_with_double_round": 335613,
+    "translation_valid_pairs": 11445413,
+    "translation_either_with_round": 436392,
+    "translation_both_with_round": 434793,
+    "translation_either_with_pair_pattern": 99998,
+    "translation_both_with_pair_pattern": 99957,
+    "translation_shared_pair_pattern": 99098,
+    "translation_shared_different_pair_pattern": 98987,
+    "translation_empty_if_mlm_rule": 22790,
+    "translation_changed_now": 3282031,
+    "translation_changed_if_mlm_rule": 3237112,
+    "translation_changed_to_identical_if_mlm_rule": 44894,
+    "dialect_form_unbalanced_round": 2011,
+    "dialect_form_parenthesis_rule_changed": 435797,
+    "standard_form_unbalanced_round": 539
+  },
+  "by_region": {
+    "강원도": {
+      "files": 5545,
+      "utterance_rows": 1850036,
+      "form_nonempty": 1850036,
+      "form_with_open_round": 996520,
+      "form_with_round": 996537,
+      "form_with_square": 4,
+      "form_with_fullwidth_round": 0,
+      "form_with_pair_pattern": 982021,
+      "form_with_different_pair_sides": 979814,
+      "form_with_double_round": 14479,
+      "form_unbalanced_round": 553,
+      "dialect_form_nonempty": 1850036,
+      "dialect_form_with_open_round": 17738,
+      "dialect_form_with_round": 17770,
+      "dialect_form_with_square": 4,
+      "dialect_form_with_fullwidth_round": 0,
+      "dialect_form_with_pair_pattern": 2102,
+      "dialect_form_with_different_pair_sides": 2092,
+      "dialect_form_with_double_round": 14467,
+      "classification_valid": 1849591,
+      "classification_empty": 445,
+      "classification_empty_with_round": 444,
+      "standard_form_nonempty": 1850036,
+      "standard_form_with_open_round": 17588,
+      "standard_form_with_round": 17618,
+      "standard_form_with_square": 4,
+      "standard_form_with_fullwidth_round": 0,
+      "standard_form_with_pair_pattern": 2102,
+      "standard_form_with_different_pair_sides": 2092,
+      "standard_form_with_double_round": 14463,
+      "translation_valid_pairs": 1850036,
+      "translation_either_with_round": 17779,
+      "translation_both_with_round": 17609,
+      "translation_either_with_pair_pattern": 2104,
+      "translation_both_with_pair_pattern": 2100,
+      "translation_shared_pair_pattern": 2070,
+      "translation_shared_different_pair_pattern": 2061,
+      "translation_empty_if_mlm_rule": 446,
+      "translation_changed_now": 980252,
+      "translation_changed_if_mlm_rule": 979986,
+      "translation_changed_to_identical_if_mlm_rule": 265,
+      "dialect_form_unbalanced_round": 254,
+      "dialect_form_parenthesis_rule_changed": 17671,
+      "standard_form_unbalanced_round": 103
+    },
+    "경상도": {
+      "files": 8542,
+      "utterance_rows": 2318214,
+      "form_nonempty": 2318214,
+      "form_with_open_round": 405264,
+      "form_with_round": 405272,
+      "form_with_square": 0,
+      "form_with_fullwidth_round": 0,
+      "form_with_pair_pattern": 367509,
+      "form_with_different_pair_sides": 367366,
+      "form_with_double_round": 47500,
+      "dialect_form_nonempty": 2318214,
+      "dialect_form_with_open_round": 47535,
+      "dialect_form_with_round": 47547,
+      "dialect_form_with_square": 0,
+      "dialect_form_with_fullwidth_round": 0,
+      "dialect_form_with_pair_pattern": 0,
+      "dialect_form_with_different_pair_sides": 0,
+      "dialect_form_with_double_round": 47485,
+      "classification_valid": 2317907,
+      "classification_empty": 307,
+      "classification_empty_with_round": 307,
+      "standard_form_nonempty": 2318214,
+      "standard_form_with_open_round": 47536,
+      "standard_form_with_round": 47546,
+      "standard_form_with_square": 0,
+      "standard_form_with_fullwidth_round": 0,
+      "standard_form_with_pair_pattern": 0,
+      "standard_form_with_different_pair_sides": 0,
+      "standard_form_with_double_round": 47486,
+      "translation_valid_pairs": 2318214,
+      "translation_either_with_round": 47556,
+      "translation_both_with_round": 47537,
+      "translation_either_with_pair_pattern": 0,
+      "translation_both_with_pair_pattern": 0,
+      "translation_shared_pair_pattern": 0,
+      "translation_shared_different_pair_pattern": 0,
+      "translation_empty_if_mlm_rule": 307,
+      "translation_changed_now": 367418,
+      "translation_changed_if_mlm_rule": 367159,
+      "translation_changed_to_identical_if_mlm_rule": 259,
+      "form_unbalanced_round": 40,
+      "dialect_form_unbalanced_round": 38,
+      "dialect_form_parenthesis_rule_changed": 47523,
+      "standard_form_unbalanced_round": 50
+    },
+    "전라도": {
+      "files": 7412,
+      "utterance_rows": 1992101,
+      "form_nonempty": 1992101,
+      "form_with_open_round": 346479,
+      "form_with_round": 346479,
+      "form_with_square": 15,
+      "form_with_fullwidth_round": 0,
+      "form_with_pair_pattern": 303305,
+      "form_with_different_pair_sides": 303160,
+      "form_with_double_round": 51096,
+      "form_unbalanced_round": 26,
+      "dialect_form_nonempty": 1992101,
+      "dialect_form_with_open_round": 56380,
+      "dialect_form_with_round": 56381,
+      "dialect_form_with_square": 14,
+      "dialect_form_with_fullwidth_round": 0,
+      "dialect_form_with_pair_pattern": 4468,
+      "dialect_form_with_different_pair_sides": 4463,
+      "dialect_form_with_double_round": 51013,
+      "classification_valid": 1990314,
+      "classification_empty": 1787,
+      "classification_empty_with_round": 1777,
+      "standard_form_nonempty": 1992101,
+      "standard_form_with_open_round": 56231,
+      "standard_form_with_round": 56242,
+      "standard_form_with_square": 14,
+      "standard_form_with_fullwidth_round": 0,
+      "standard_form_with_pair_pattern": 4468,
+      "standard_form_with_different_pair_sides": 4463,
+      "standard_form_with_double_round": 51005,
+      "translation_valid_pairs": 1992101,
+      "translation_either_with_round": 56383,
+      "translation_both_with_round": 56240,
+      "translation_either_with_pair_pattern": 4468,
+      "translation_both_with_pair_pattern": 4468,
+      "translation_shared_pair_pattern": 4468,
+      "translation_shared_different_pair_pattern": 4463,
+      "translation_empty_if_mlm_rule": 1787,
+      "translation_changed_now": 299790,
+      "translation_changed_if_mlm_rule": 299422,
+      "translation_changed_to_identical_if_mlm_rule": 365,
+      "dialect_form_unbalanced_round": 170,
+      "dialect_form_parenthesis_rule_changed": 56358,
+      "standard_form_unbalanced_round": 48
+    },
+    "제주도": {
+      "files": 5638,
+      "utterance_rows": 3108059,
+      "form_nonempty": 3108059,
+      "form_with_open_round": 1440738,
+      "form_with_round": 1440747,
+      "form_with_square": 53,
+      "form_with_fullwidth_round": 0,
+      "form_with_pair_pattern": 1339519,
+      "form_with_different_pair_sides": 1338251,
+      "form_with_double_round": 173001,
+      "form_unbalanced_round": 101,
+      "dialect_form_nonempty": 3108059,
+      "dialect_form_with_open_round": 263456,
+      "dialect_form_with_round": 263508,
+      "dialect_form_with_square": 45,
+      "dialect_form_with_fullwidth_round": 0,
+      "dialect_form_with_pair_pattern": 92391,
+      "dialect_form_with_different_pair_sides": 92290,
+      "dialect_form_with_double_round": 172640,
+      "classification_valid": 3088333,
+      "classification_empty": 19726,
+      "classification_empty_with_round": 19680,
+      "standard_form_nonempty": 3108059,
+      "standard_form_with_open_round": 262236,
+      "standard_form_with_round": 262296,
+      "standard_form_with_square": 53,
+      "standard_form_with_fullwidth_round": 0,
+      "standard_form_with_pair_pattern": 92374,
+      "standard_form_with_different_pair_sides": 92280,
+      "standard_form_with_double_round": 172614,
+      "translation_valid_pairs": 3108059,
+      "translation_either_with_round": 263517,
+      "translation_both_with_round": 262287,
+      "translation_either_with_pair_pattern": 92401,
+      "translation_both_with_pair_pattern": 92364,
+      "translation_shared_pair_pattern": 91538,
+      "translation_shared_different_pair_pattern": 91447,
+      "translation_empty_if_mlm_rule": 19731,
+      "translation_changed_now": 1289174,
+      "translation_changed_if_mlm_rule": 1245327,
+      "translation_changed_to_identical_if_mlm_rule": 43822,
+      "dialect_form_unbalanced_round": 1480,
+      "dialect_form_parenthesis_rule_changed": 263132,
+      "standard_form_unbalanced_round": 285
+    },
+    "충청도": {
+      "files": 7076,
+      "utterance_rows": 2177003,
+      "form_nonempty": 2177003,
+      "form_with_open_round": 385057,
+      "form_with_round": 385074,
+      "form_with_square": 3,
+      "form_with_fullwidth_round": 0,
+      "form_with_pair_pattern": 346174,
+      "form_with_different_pair_sides": 345852,
+      "form_with_double_round": 50071,
+      "dialect_form_nonempty": 2177003,
+      "dialect_form_with_open_round": 51127,
+      "dialect_form_with_round": 51149,
+      "dialect_form_with_square": 3,
+      "dialect_form_with_fullwidth_round": 0,
+      "dialect_form_with_pair_pattern": 1025,
+      "dialect_form_with_different_pair_sides": 1019,
+      "dialect_form_with_double_round": 50045,
+      "classification_valid": 2176484,
+      "classification_empty": 519,
+      "classification_empty_with_round": 518,
+      "standard_form_nonempty": 2177003,
+      "standard_form_with_open_round": 51107,
+      "standard_form_with_round": 51128,
+      "standard_form_with_square": 3,
+      "standard_form_with_fullwidth_round": 0,
+      "standard_form_with_pair_pattern": 1025,
+      "standard_form_with_different_pair_sides": 1019,
+      "standard_form_with_double_round": 50045,
+      "translation_valid_pairs": 2177003,
+      "translation_either_with_round": 51157,
+      "translation_both_with_round": 51120,
+      "translation_either_with_pair_pattern": 1025,
+      "translation_both_with_pair_pattern": 1025,
+      "translation_shared_pair_pattern": 1022,
+      "translation_shared_different_pair_pattern": 1016,
+      "translation_empty_if_mlm_rule": 519,
+      "translation_changed_now": 345397,
+      "translation_changed_if_mlm_rule": 345218,
+      "translation_changed_to_identical_if_mlm_rule": 183,
+      "form_unbalanced_round": 53,
+      "dialect_form_unbalanced_round": 69,
+      "dialect_form_parenthesis_rule_changed": 51113,
+      "standard_form_unbalanced_round": 53
+    }
+  },
+  "by_split": {
+    "test": {
+      "files": 3429,
+      "utterance_rows": 1145422,
+      "form_nonempty": 1145422,
+      "form_with_open_round": 365048,
+      "form_with_round": 365059,
+      "form_with_square": 15,
+      "form_with_fullwidth_round": 0,
+      "form_with_pair_pattern": 341922,
+      "form_with_different_pair_sides": 341502,
+      "form_with_double_round": 33585,
+      "form_unbalanced_round": 71,
+      "dialect_form_nonempty": 1145422,
+      "dialect_form_with_open_round": 43887,
+      "dialect_form_with_round": 43903,
+      "dialect_form_with_square": 14,
+      "dialect_form_with_fullwidth_round": 0,
+      "dialect_form_with_pair_pattern": 10304,
+      "dialect_form_with_different_pair_sides": 10290,
+      "dialect_form_with_double_round": 33536,
+      "classification_valid": 1143201,
+      "classification_empty": 2221,
+      "classification_empty_with_round": 2218,
+      "standard_form_nonempty": 1145422,
+      "standard_form_with_open_round": 43723,
+      "standard_form_with_round": 43745,
+      "standard_form_with_square": 15,
+      "standard_form_with_fullwidth_round": 0,
+      "standard_form_with_pair_pattern": 10301,
+      "standard_form_with_different_pair_sides": 10288,
+      "standard_form_with_double_round": 33529,
+      "translation_valid_pairs": 1145422,
+      "translation_either_with_round": 43910,
+      "translation_both_with_round": 43738,
+      "translation_either_with_pair_pattern": 10306,
+      "translation_both_with_pair_pattern": 10299,
+      "translation_shared_pair_pattern": 10219,
+      "translation_shared_different_pair_pattern": 10206,
+      "translation_empty_if_mlm_rule": 2224,
+      "translation_changed_now": 336276,
+      "translation_changed_if_mlm_rule": 331961,
+      "translation_changed_to_identical_if_mlm_rule": 4307,
+      "dialect_form_unbalanced_round": 208,
+      "dialect_form_parenthesis_rule_changed": 43840,
+      "standard_form_unbalanced_round": 74
+    },
+    "validation": {
+      "files": 3411,
+      "utterance_rows": 1145356,
+      "form_nonempty": 1145356,
+      "form_with_open_round": 354141,
+      "form_with_round": 354144,
+      "form_with_square": 7,
+      "form_with_fullwidth_round": 0,
+      "form_with_pair_pattern": 329724,
+      "form_with_different_pair_sides": 329325,
+      "form_with_double_round": 33771,
+      "form_unbalanced_round": 116,
+      "dialect_form_nonempty": 1145356,
+      "dialect_form_with_open_round": 43584,
+      "dialect_form_with_round": 43595,
+      "dialect_form_with_square": 6,
+      "dialect_form_with_fullwidth_round": 0,
+      "dialect_form_with_pair_pattern": 9828,
+      "dialect_form_with_different_pair_sides": 9818,
+      "dialect_form_with_double_round": 33716,
+      "classification_valid": 1143040,
+      "classification_empty": 2316,
+      "classification_empty_with_round": 2311,
+      "standard_form_nonempty": 1145356,
+      "standard_form_with_open_round": 43465,
+      "standard_form_with_round": 43473,
+      "standard_form_with_square": 7,
+      "standard_form_with_fullwidth_round": 0,
+      "standard_form_with_pair_pattern": 9826,
+      "standard_form_with_different_pair_sides": 9817,
+      "standard_form_with_double_round": 33724,
+      "translation_valid_pairs": 1145356,
+      "translation_either_with_round": 43602,
+      "translation_both_with_round": 43466,
+      "translation_either_with_pair_pattern": 9829,
+      "translation_both_with_pair_pattern": 9825,
+      "translation_shared_pair_pattern": 9734,
+      "translation_shared_different_pair_pattern": 9725,
+      "translation_empty_if_mlm_rule": 2316,
+      "translation_changed_now": 323906,
+      "translation_changed_if_mlm_rule": 319812,
+      "translation_changed_to_identical_if_mlm_rule": 4094,
+      "dialect_form_unbalanced_round": 174,
+      "dialect_form_parenthesis_rule_changed": 43550,
+      "standard_form_unbalanced_round": 37
+    },
+    "train": {
+      "files": 27373,
+      "utterance_rows": 9154635,
+      "form_nonempty": 9154635,
+      "form_with_open_round": 2854869,
+      "form_with_round": 2854906,
+      "form_with_square": 53,
+      "form_with_fullwidth_round": 0,
+      "form_with_pair_pattern": 2666882,
+      "form_with_different_pair_sides": 2663616,
+      "form_with_double_round": 268791,
+      "form_unbalanced_round": 586,
+      "dialect_form_nonempty": 9154635,
+      "dialect_form_with_open_round": 348765,
+      "dialect_form_with_round": 348857,
+      "dialect_form_with_square": 46,
+      "dialect_form_with_fullwidth_round": 0,
+      "dialect_form_with_pair_pattern": 79854,
+      "dialect_form_with_different_pair_sides": 79756,
+      "dialect_form_with_double_round": 268398,
+      "classification_valid": 9136388,
+      "classification_empty": 18247,
+      "classification_empty_with_round": 18197,
+      "standard_form_nonempty": 9154635,
+      "standard_form_with_open_round": 347510,
+      "standard_form_with_round": 347612,
+      "standard_form_with_square": 52,
+      "standard_form_with_fullwidth_round": 0,
+      "standard_form_with_pair_pattern": 79842,
+      "standard_form_with_different_pair_sides": 79749,
+      "standard_form_with_double_round": 268360,
+      "translation_valid_pairs": 9154635,
+      "translation_either_with_round": 348880,
+      "translation_both_with_round": 347589,
+      "translation_either_with_pair_pattern": 79863,
+      "translation_both_with_pair_pattern": 79833,
+      "translation_shared_pair_pattern": 79145,
+      "translation_shared_different_pair_pattern": 79056,
+      "translation_empty_if_mlm_rule": 18250,
+      "translation_changed_now": 2621849,
+      "translation_changed_if_mlm_rule": 2585339,
+      "translation_changed_to_identical_if_mlm_rule": 36493,
+      "dialect_form_unbalanced_round": 1629,
+      "dialect_form_parenthesis_rule_changed": 348407,
+      "standard_form_unbalanced_round": 428
+    }
+  },
+  "percentages": {
+    "강원도": {
+      "dialect_with_round_pct": 0.9605,
+      "dialect_with_pair_pattern_pct": 0.1136,
+      "standard_with_round_pct": 0.9523,
+      "shared_different_pair_pattern_pct": 0.1114
+    },
+    "경상도": {
+      "dialect_with_round_pct": 2.051,
+      "dialect_with_pair_pattern_pct": 0.0,
+      "standard_with_round_pct": 2.051,
+      "shared_different_pair_pattern_pct": 0.0
+    },
+    "전라도": {
+      "dialect_with_round_pct": 2.8302,
+      "dialect_with_pair_pattern_pct": 0.2243,
+      "standard_with_round_pct": 2.8233,
+      "shared_different_pair_pattern_pct": 0.224
+    },
+    "제주도": {
+      "dialect_with_round_pct": 8.4782,
+      "dialect_with_pair_pattern_pct": 2.9726,
+      "standard_with_round_pct": 8.4392,
+      "shared_different_pair_pattern_pct": 2.9423
+    },
+    "충청도": {
+      "dialect_with_round_pct": 2.3495,
+      "dialect_with_pair_pattern_pct": 0.0471,
+      "standard_with_round_pct": 2.3485,
+      "shared_different_pair_pattern_pct": 0.0467
+    },
+    "전체": {
+      "dialect_with_round_pct": 3.8125,
+      "dialect_with_pair_pattern_pct": 0.8736,
+      "standard_with_round_pct": 3.7992,
+      "shared_different_pair_pattern_pct": 0.8649
+    }
+  },
+  "examples": {
+    "강원도": {
+      "source_round_without_pair_pattern": [
+        {
+          "path": "D:\\방언 데이터 총정리\\013.한국어 방언 발화 데이터(강원도)\\01.데이터\\2.Validation\\(new3)라벨링데이터\\(비식별화완료)(new3)강원도_학습데이터_2\\DGIN21800006.json",
+          "utterance_index": 167,
+          "utterance_id": "DGIN21800006.1.1.168",
+          "form": "가정 (()) 그런 것도 느끼고 막 이것저것 막 맞지 않는 것들이 있어 (가주고)/(가지고)",
+          "dialect_form": "가정 (()) 그런 것도 느끼고 막 이것저것 막 맞지 않는 것들이 있어 가주고",
+          "standard_form": "가정 (()) 그런 것도 느끼고 막 이것저것 막 맞지 않는 것들이 있어 가지고"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\013.한국어 방언 발화 데이터(강원도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)(new3)강원도_학습데이터_1\\DGDQ20002482.json",
+          "utterance_index": 344,
+          "utterance_id": "DGDQ20002482.1.1.345",
+          "form": "애기똥은 이제 이곳에서 (운제까지나 )/(언제까지나 ()운제까지나)/()언제까지나) 아빠가 오기를 기다립니다.",
+          "dialect_form": "애기똥은 이제 이곳에서 운제까지나 운제까지나)/()언제까지나) 아빠가 오기를 기다립니다.",
+          "standard_form": "애기똥은 이제 이곳에서 언제까지나 (운제까지나)/()언제까지나) 아빠가 오기를 기다립니다."
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\013.한국어 방언 발화 데이터(강원도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)(new3)강원도_학습데이터_1\\DGDQ20001128.json",
+          "utterance_index": 194,
+          "utterance_id": "DGDQ20001128.1.1.195",
+          "form": "그래서 둘이 안 사귀었으면 좋겠는데 그냥 셋이서 친구 했으면 좋겠는데 아무튼 (())",
+          "dialect_form": "그래서 둘이 안 사귀었으면 좋겠는데 그냥 셋이서 친구 했으면 좋겠는데 아무튼 (())",
+          "standard_form": "그래서 둘이 안 사귀었으면 좋겠는데 그냥 셋이서 친구 했으면 좋겠는데 아무튼 (())"
+        }
+      ],
+      "source_double_round": [
+        {
+          "path": "D:\\방언 데이터 총정리\\013.한국어 방언 발화 데이터(강원도)\\01.데이터\\2.Validation\\(new3)라벨링데이터\\(비식별화완료)(new3)강원도_학습데이터_2\\DGIN21800006.json",
+          "utterance_index": 167,
+          "utterance_id": "DGIN21800006.1.1.168",
+          "form": "가정 (()) 그런 것도 느끼고 막 이것저것 막 맞지 않는 것들이 있어 (가주고)/(가지고)",
+          "dialect_form": "가정 (()) 그런 것도 느끼고 막 이것저것 막 맞지 않는 것들이 있어 가주고",
+          "standard_form": "가정 (()) 그런 것도 느끼고 막 이것저것 막 맞지 않는 것들이 있어 가지고"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\013.한국어 방언 발화 데이터(강원도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)(new3)강원도_학습데이터_1\\DGDQ20001128.json",
+          "utterance_index": 194,
+          "utterance_id": "DGDQ20001128.1.1.195",
+          "form": "그래서 둘이 안 사귀었으면 좋겠는데 그냥 셋이서 친구 했으면 좋겠는데 아무튼 (())",
+          "dialect_form": "그래서 둘이 안 사귀었으면 좋겠는데 그냥 셋이서 친구 했으면 좋겠는데 아무튼 (())",
+          "standard_form": "그래서 둘이 안 사귀었으면 좋겠는데 그냥 셋이서 친구 했으면 좋겠는데 아무튼 (())"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\013.한국어 방언 발화 데이터(강원도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)(new3)강원도_학습데이터_1\\DGIN21500318.json",
+          "utterance_index": 165,
+          "utterance_id": "DGIN21500318.1.1.166",
+          "form": "음 아니야 (갸는)/(걔는) (())",
+          "dialect_form": "음 아니야 갸는 (())",
+          "standard_form": "음 아니야 걔는 (())"
+        }
+      ],
+      "shared_different_pair_pattern": [
+        {
+          "path": "D:\\방언 데이터 총정리\\013.한국어 방언 발화 데이터(강원도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)(new3)강원도_학습데이터_1\\DGIN20710095.json",
+          "utterance_index": 36,
+          "utterance_id": "DGIN20710095.1.1.37",
+          "form": "네(알겠습니더.)/(알겠습니다.)",
+          "dialect_form": "네(알겠습니더.)/(알겠습니다.)",
+          "standard_form": "네(알겠습니더.)/(알겠습니다.)"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\013.한국어 방언 발화 데이터(강원도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)(new3)강원도_학습데이터_1\\DGIN21710868.json",
+          "utterance_index": 144,
+          "utterance_id": "DGIN21710868.1.1.145",
+          "form": "그래서 말인데 우선 호칭 문제부터 해결(했으문)/(했으면) 해요.",
+          "dialect_form": "그래서 말인데 우선 호칭 문제부터 해결(했으문)/(했으면) 해요.",
+          "standard_form": "그래서 말인데 우선 호칭 문제부터 해결(했으문)/(했으면) 해요."
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\013.한국어 방언 발화 데이터(강원도)\\01.데이터\\2.Validation\\(new3)라벨링데이터\\(비식별화완료)(new3)강원도_학습데이터_2\\DGIN21711192.json",
+          "utterance_index": 173,
+          "utterance_id": "DGIN21711192.1.1.174",
+          "form": "-(지)/(제)- -애바- (지)/(제) (애비)/(아비) (아덜)/(아들) 놈 아니랄까 봐.",
+          "dialect_form": "-(지)/(제)- -애바- 지 애비 아덜 놈 아니랄까 봐.",
+          "standard_form": "-(지)/(제)- -애바- 제 아비 아들 놈 아니랄까 봐."
+        }
+      ],
+      "empty_if_mlm_rule": [
+        {
+          "path": "D:\\방언 데이터 총정리\\013.한국어 방언 발화 데이터(강원도)\\01.데이터\\2.Validation\\(new3)라벨링데이터\\(비식별화완료)(new3)강원도_학습데이터_2\\DGIN21500188.json",
+          "utterance_index": 45,
+          "utterance_id": "DGIN21500188.1.1.46",
+          "form": "(())",
+          "dialect_form": "(())",
+          "standard_form": "(())"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\013.한국어 방언 발화 데이터(강원도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)(new3)강원도_학습데이터_1\\DGDQ20000169.json",
+          "utterance_index": 908,
+          "utterance_id": "DGDQ20000169.1.1.909",
+          "form": "(())",
+          "dialect_form": "(())",
+          "standard_form": "(())"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\013.한국어 방언 발화 데이터(강원도)\\01.데이터\\2.Validation\\(new3)라벨링데이터\\(비식별화완료)(new3)강원도_학습데이터_2\\DGIN21800454.json",
+          "utterance_index": 460,
+          "utterance_id": "DGIN21800454.1.1.461",
+          "form": "(())",
+          "dialect_form": "(())",
+          "standard_form": "(())"
+        }
+      ],
+      "changed_to_identical_with_round": [
+        {
+          "path": "D:\\방언 데이터 총정리\\013.한국어 방언 발화 데이터(강원도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)(new3)강원도_학습데이터_1\\DGIN21500612.json",
+          "utterance_index": 227,
+          "utterance_id": "DGIN21500612.1.1.228",
+          "form": "(()) (똑띠)/(#똑띠) 알려주지 못했어 그거를",
+          "dialect_form": "(()) 똑띠 알려주지 못했어 그거를",
+          "standard_form": "(()) #똑띠 알려주지 못했어 그거를"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\013.한국어 방언 발화 데이터(강원도)\\01.데이터\\2.Validation\\(new3)라벨링데이터\\(비식별화완료)(new3)강원도_학습데이터_2\\DGIN21801004.json",
+          "utterance_index": 26,
+          "utterance_id": "DGIN21801004.1.1.27",
+          "form": "(똥짜배기를)/(#똥짜배기를) (()) 아~ 예.",
+          "dialect_form": "똥짜배기를 (()) 아~ 예.",
+          "standard_form": "#똥짜배기를 (()) 아~ 예."
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\013.한국어 방언 발화 데이터(강원도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)(new3)강원도_학습데이터_1\\DGIN21500429.json",
+          "utterance_index": 30,
+          "utterance_id": "DGIN21500429.1.1.31",
+          "form": "(()) 그냥 뭐~ 바로 그냥 몇 번 (디다)/(#디다) 보고 하면은 어려울 게 없는데",
+          "dialect_form": "(()) 그냥 뭐~ 바로 그냥 몇 번 디다 보고 하면은 어려울 게 없는데",
+          "standard_form": "(()) 그냥 뭐~ 바로 그냥 몇 번 #디다 보고 하면은 어려울 게 없는데"
+        }
+      ]
+    },
+    "경상도": {
+      "source_round_without_pair_pattern": [
+        {
+          "path": "D:\\방언 데이터 총정리\\014.한국어 방언 발화 데이터(경상도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)경상도_학습데이터_1\\DKSR20000002.json",
+          "utterance_index": 138,
+          "utterance_id": "DKSR20000002.1.1.139",
+          "form": "야 저거 뭔데 야 진짜 저거 별로다면서 (그까)/(그러니까) 막 일부러 막 크게 얘기해도 되는데 우리끼리 막 (())",
+          "dialect_form": "야 저거 뭔데 야 진짜 저거 별로다면서 그까 막 일부러 막 크게 얘기해도 되는데 우리끼리 막 (())",
+          "standard_form": "야 저거 뭔데 야 진짜 저거 별로다면서 그러니까 막 일부러 막 크게 얘기해도 되는데 우리끼리 막 (())"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\014.한국어 방언 발화 데이터(경상도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)경상도_학습데이터_1\\DKSR20000623.json",
+          "utterance_index": 33,
+          "utterance_id": "DKSR20000623.1.1.34",
+          "form": "(()) 기본이 가장 중요하다고 생각을 하기 때문에",
+          "dialect_form": "(()) 기본이 가장 중요하다고 생각을 하기 때문에",
+          "standard_form": "(()) 기본이 가장 중요하다고 생각을 하기 때문에"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\014.한국어 방언 발화 데이터(경상도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)경상도_학습데이터_1\\DKSR20005151.json",
+          "utterance_index": 133,
+          "utterance_id": "DKSR20005151.1.1.134",
+          "form": "((위에체가)) 생긴다고 생각하거든요.",
+          "dialect_form": "((위에체가)) 생긴다고 생각하거든요.",
+          "standard_form": "((위에체가)) 생긴다고 생각하거든요."
+        }
+      ],
+      "source_double_round": [
+        {
+          "path": "D:\\방언 데이터 총정리\\014.한국어 방언 발화 데이터(경상도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)경상도_학습데이터_1\\DKSR20000002.json",
+          "utterance_index": 138,
+          "utterance_id": "DKSR20000002.1.1.139",
+          "form": "야 저거 뭔데 야 진짜 저거 별로다면서 (그까)/(그러니까) 막 일부러 막 크게 얘기해도 되는데 우리끼리 막 (())",
+          "dialect_form": "야 저거 뭔데 야 진짜 저거 별로다면서 그까 막 일부러 막 크게 얘기해도 되는데 우리끼리 막 (())",
+          "standard_form": "야 저거 뭔데 야 진짜 저거 별로다면서 그러니까 막 일부러 막 크게 얘기해도 되는데 우리끼리 막 (())"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\014.한국어 방언 발화 데이터(경상도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)경상도_학습데이터_1\\DKSR20000623.json",
+          "utterance_index": 33,
+          "utterance_id": "DKSR20000623.1.1.34",
+          "form": "(()) 기본이 가장 중요하다고 생각을 하기 때문에",
+          "dialect_form": "(()) 기본이 가장 중요하다고 생각을 하기 때문에",
+          "standard_form": "(()) 기본이 가장 중요하다고 생각을 하기 때문에"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\014.한국어 방언 발화 데이터(경상도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)경상도_학습데이터_1\\DKSR20005151.json",
+          "utterance_index": 133,
+          "utterance_id": "DKSR20005151.1.1.134",
+          "form": "((위에체가)) 생긴다고 생각하거든요.",
+          "dialect_form": "((위에체가)) 생긴다고 생각하거든요.",
+          "standard_form": "((위에체가)) 생긴다고 생각하거든요."
+        }
+      ],
+      "empty_if_mlm_rule": [
+        {
+          "path": "D:\\방언 데이터 총정리\\014.한국어 방언 발화 데이터(경상도)\\01.데이터\\2.Validation\\(new3)라벨링데이터\\(비식별화완료)경상도_학습데이터_2\\DKSR20001140.json",
+          "utterance_index": 79,
+          "utterance_id": "DKSR20001140.1.1.80",
+          "form": "(())",
+          "dialect_form": "(())",
+          "standard_form": "(())"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\014.한국어 방언 발화 데이터(경상도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)경상도_학습데이터_1\\DKCI20001870.json",
+          "utterance_index": 91,
+          "utterance_id": "DKCI20001870.1.1.92",
+          "form": "(())",
+          "dialect_form": "(())",
+          "standard_form": "(())"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\014.한국어 방언 발화 데이터(경상도)\\01.데이터\\2.Validation\\(new3)라벨링데이터\\(비식별화완료)경상도_학습데이터_2\\DKSR20001123.json",
+          "utterance_index": 108,
+          "utterance_id": "DKSR20001123.1.1.109",
+          "form": "(())",
+          "dialect_form": "(())",
+          "standard_form": "(())"
+        }
+      ],
+      "changed_to_identical_with_round": [
+        {
+          "path": "D:\\방언 데이터 총정리\\014.한국어 방언 발화 데이터(경상도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)경상도_학습데이터_1\\DKSR20000799.json",
+          "utterance_index": 43,
+          "utterance_id": "DKSR20000799.1.1.44",
+          "form": "저는 이제 대구에 있다가 (()) 서울 (올라가나노이)/(#올라가나노이)",
+          "dialect_form": "저는 이제 대구에 있다가 (()) 서울 올라가나노이",
+          "standard_form": "저는 이제 대구에 있다가 (()) 서울 #올라가나노이"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\014.한국어 방언 발화 데이터(경상도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)경상도_학습데이터_1\\DKCI20000433.json",
+          "utterance_index": 185,
+          "utterance_id": "DKCI20000433.1.1.186",
+          "form": "막 시험칠라하니까 머리가 안 돌아가고 아무튼 (이차저차)/(#이차저차) 해가지고 (()) 끝났어.",
+          "dialect_form": "막 시험칠라하니까 머리가 안 돌아가고 아무튼 이차저차 해가지고 (()) 끝났어.",
+          "standard_form": "막 시험칠라하니까 머리가 안 돌아가고 아무튼 #이차저차 해가지고 (()) 끝났어."
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\014.한국어 방언 발화 데이터(경상도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)경상도_학습데이터_1\\DKCI20002827.json",
+          "utterance_index": 260,
+          "utterance_id": "DKCI20002827.1.1.261",
+          "form": "(()) 걔를 생각보다 결말이 좀 (히바리)/(#히바리) 없게 끝났어.",
+          "dialect_form": "(()) 걔를 생각보다 결말이 좀 히바리 없게 끝났어.",
+          "standard_form": "(()) 걔를 생각보다 결말이 좀 #히바리 없게 끝났어."
+        }
+      ]
+    },
+    "전라도": {
+      "source_round_without_pair_pattern": [
+        {
+          "path": "D:\\documents\\project_1\\git\\project1_dataset\\JSON만_모은폴더_전라도\\DJDG20001016.json",
+          "utterance_index": 30,
+          "utterance_id": "DJDG20001016.1.1.31",
+          "form": "(()) 거기 맨날 내가 제일 좋아하던 게 잔치국수랑 뭐~ 회오리 감자도 (허벌나게)/(굉장하게) 큰 게 통으로 (나와불고)/(나와버리고) 그래갖고 내가 허버허버 퍼먹었던 게 기억이 나는 (구마잉.)/(구먼.)",
+          "dialect_form": "(()) 거기 맨날 내가 제일 좋아하던 게 잔치국수랑 뭐~ 회오리 감자도 허벌나게 큰 게 통으로 나와불고 그래갖고 내가 허버허버 퍼먹었던 게 기억이 나는 구마잉.",
+          "standard_form": "(()) 거기 맨날 내가 제일 좋아하던 게 잔치국수랑 뭐~ 회오리 감자도 굉장하게 큰 게 통으로 나와버리고 그래갖고 내가 허버허버 퍼먹었던 게 기억이 나는 구먼."
+        },
+        {
+          "path": "D:\\documents\\project_1\\git\\project1_dataset\\JSON만_모은폴더_전라도\\DJSX20004497.json",
+          "utterance_index": 35,
+          "utterance_id": "DJSX20004497.1.1.36",
+          "form": "다이소 같은 데도 지금은 안 가지만 어쩌다 (()) 다이소 같은 가면",
+          "dialect_form": "다이소 같은 데도 지금은 안 가지만 어쩌다 (()) 다이소 같은 가면",
+          "standard_form": "다이소 같은 데도 지금은 안 가지만 어쩌다 (()) 다이소 같은 가면"
+        },
+        {
+          "path": "D:\\documents\\project_1\\git\\project1_dataset\\JSON만_모은폴더_전라도\\DJSX20002831.json",
+          "utterance_index": 123,
+          "utterance_id": "DJSX20002831.1.1.124",
+          "form": "(()) 내가 물어봤어.",
+          "dialect_form": "(()) 내가 물어봤어.",
+          "standard_form": "(()) 내가 물어봤어."
+        }
+      ],
+      "source_double_round": [
+        {
+          "path": "D:\\documents\\project_1\\git\\project1_dataset\\JSON만_모은폴더_전라도\\DJDG20001016.json",
+          "utterance_index": 30,
+          "utterance_id": "DJDG20001016.1.1.31",
+          "form": "(()) 거기 맨날 내가 제일 좋아하던 게 잔치국수랑 뭐~ 회오리 감자도 (허벌나게)/(굉장하게) 큰 게 통으로 (나와불고)/(나와버리고) 그래갖고 내가 허버허버 퍼먹었던 게 기억이 나는 (구마잉.)/(구먼.)",
+          "dialect_form": "(()) 거기 맨날 내가 제일 좋아하던 게 잔치국수랑 뭐~ 회오리 감자도 허벌나게 큰 게 통으로 나와불고 그래갖고 내가 허버허버 퍼먹었던 게 기억이 나는 구마잉.",
+          "standard_form": "(()) 거기 맨날 내가 제일 좋아하던 게 잔치국수랑 뭐~ 회오리 감자도 굉장하게 큰 게 통으로 나와버리고 그래갖고 내가 허버허버 퍼먹었던 게 기억이 나는 구먼."
+        },
+        {
+          "path": "D:\\documents\\project_1\\git\\project1_dataset\\JSON만_모은폴더_전라도\\DJSX20004497.json",
+          "utterance_index": 35,
+          "utterance_id": "DJSX20004497.1.1.36",
+          "form": "다이소 같은 데도 지금은 안 가지만 어쩌다 (()) 다이소 같은 가면",
+          "dialect_form": "다이소 같은 데도 지금은 안 가지만 어쩌다 (()) 다이소 같은 가면",
+          "standard_form": "다이소 같은 데도 지금은 안 가지만 어쩌다 (()) 다이소 같은 가면"
+        },
+        {
+          "path": "D:\\documents\\project_1\\git\\project1_dataset\\JSON만_모은폴더_전라도\\DJSX20002831.json",
+          "utterance_index": 123,
+          "utterance_id": "DJSX20002831.1.1.124",
+          "form": "(()) 내가 물어봤어.",
+          "dialect_form": "(()) 내가 물어봤어.",
+          "standard_form": "(()) 내가 물어봤어."
+        }
+      ],
+      "shared_different_pair_pattern": [
+        {
+          "path": "D:\\documents\\project_1\\git\\project1_dataset\\JSON만_모은폴더_전라도\\DJSX20004497.json",
+          "utterance_index": 184,
+          "utterance_id": "DJSX20004497.1.1.185",
+          "form": "남동생은 안 가요 안 가고 어쩌구 핑계대서 그래 그렇게 해라 그러고 나 혼자 (댕겨)/(다녀)요 내 조상님(인께)/(이니까)",
+          "dialect_form": "남동생은 안 가요 안 가고 어쩌구 핑계대서 그래 그렇게 해라 그러고 나 혼자 댕겨요 내 조상님(인께)/(이니까)",
+          "standard_form": "남동생은 안 가요 안 가고 어쩌구 핑계대서 그래 그렇게 해라 그러고 나 혼자 다녀요 내 조상님(인께)/(이니까)"
+        },
+        {
+          "path": "D:\\documents\\project_1\\git\\project1_dataset\\JSON만_모은폴더_전라도\\DJSX20003754.json",
+          "utterance_index": 220,
+          "utterance_id": "DJSX20003754.1.1.221",
+          "form": "점심 먹던 사진을 보내(주드라고)/(주더라고).",
+          "dialect_form": "점심 먹던 사진을 보내(주드라고)/(주더라고).",
+          "standard_form": "점심 먹던 사진을 보내(주드라고)/(주더라고)."
+        },
+        {
+          "path": "D:\\documents\\project_1\\git\\project1_dataset\\JSON만_모은폴더_전라도\\DJSX20001579.json",
+          "utterance_index": 3,
+          "utterance_id": "DJSX20001579.1.1.4",
+          "form": "착하지 않고@웃음 그래 가지고 포기(했소.)/(했어.)",
+          "dialect_form": "착하지 않고{laughing} 그래 가지고 포기(했소.)/(했어.)",
+          "standard_form": "착하지 않고{laughing} 그래 가지고 포기(했소.)/(했어.)"
+        }
+      ],
+      "empty_if_mlm_rule": [
+        {
+          "path": "D:\\documents\\project_1\\git\\project1_dataset\\JSON만_모은폴더_전라도\\DJSX20001483.json",
+          "utterance_index": 190,
+          "utterance_id": "DJSX20001483.1.1.191",
+          "form": "(())",
+          "dialect_form": "(())",
+          "standard_form": "(())"
+        },
+        {
+          "path": "D:\\documents\\project_1\\git\\project1_dataset\\JSON만_모은폴더_전라도\\DJSX20002460.json",
+          "utterance_index": 136,
+          "utterance_id": "DJSX20002460.1.1.137",
+          "form": "(())",
+          "dialect_form": "(())",
+          "standard_form": "(())"
+        },
+        {
+          "path": "D:\\documents\\project_1\\git\\project1_dataset\\JSON만_모은폴더_전라도\\DJDD20000060.json",
+          "utterance_index": 178,
+          "utterance_id": "DJDD20000060.1.1.179",
+          "form": "(())",
+          "dialect_form": "(())",
+          "standard_form": "(())"
+        }
+      ],
+      "changed_to_identical_with_round": [
+        {
+          "path": "D:\\documents\\project_1\\git\\project1_dataset\\JSON만_모은폴더_전라도\\DJSX20004152.json",
+          "utterance_index": 88,
+          "utterance_id": "DJSX20004152.1.1.89",
+          "form": "(오매)/(#오매) 단풍 들겄네 나 겨울 ((둔다는)) 어려서 겨울에 우리 엄마 따라서 그 설 지나고 나면",
+          "dialect_form": "오매 단풍 들겄네 나 겨울 ((둔다는)) 어려서 겨울에 우리 엄마 따라서 그 설 지나고 나면",
+          "standard_form": "#오매 단풍 들겄네 나 겨울 ((둔다는)) 어려서 겨울에 우리 엄마 따라서 그 설 지나고 나면"
+        },
+        {
+          "path": "D:\\documents\\project_1\\git\\project1_dataset\\JSON만_모은폴더_전라도\\DJDG20001287.json",
+          "utterance_index": 49,
+          "utterance_id": "DJDG20001287.1.1.50",
+          "form": "(()) 인제 (금마랑)/(#금마랑) 인제 존나 친하게 지냈어.",
+          "dialect_form": "(()) 인제 금마랑 인제 존나 친하게 지냈어.",
+          "standard_form": "(()) 인제 #금마랑 인제 존나 친하게 지냈어."
+        },
+        {
+          "path": "D:\\documents\\project_1\\git\\project1_dataset\\JSON만_모은폴더_전라도\\DJSX20002708.json",
+          "utterance_index": 110,
+          "utterance_id": "DJSX20002708.1.1.111",
+          "form": "(()) 그때 내가 막 (두룬두룬두룬)/(#두룬두룬두룬)했잖아 내가 해야 될 걸@웃음",
+          "dialect_form": "(()) 그때 내가 막 두룬두룬두룬했잖아 내가 해야 될 걸{laughing}",
+          "standard_form": "(()) 그때 내가 막 #두룬두룬두룬했잖아 내가 해야 될 걸{laughing}"
+        }
+      ]
+    },
+    "제주도": {
+      "source_round_without_pair_pattern": [
+        {
+          "path": "D:\\방언 데이터 총정리\\016.한국어 방언 발화 데이터(제주도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)제주도_학습용데이터_1\\DZJD20001116.json",
+          "utterance_index": 24,
+          "utterance_id": "DZJD20001116.1.1.25",
+          "form": "((열xxx)) 모두 밖으로만 다 (해대신디)/(해댔는데) 내려갈 수가 (이시쿠과)/(있겠어요) 온도 (상승이주)/(상승이지) 완전",
+          "dialect_form": "((열xxx)) 모두 밖으로만 다 해대신디 내려갈 수가 이시쿠과 온도 상승이주 완전",
+          "standard_form": "((열xxx)) 모두 밖으로만 다 해댔는데 내려갈 수가 있겠어요 온도 상승이지 완전"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\016.한국어 방언 발화 데이터(제주도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)제주도_학습용데이터_1\\DZHF20001983.json",
+          "utterance_index": 8,
+          "utterance_id": "DZHF20001983.1.1.9",
+          "form": "무슨 막 (()) 또 뭐 불 불여시?",
+          "dialect_form": "무슨 막 (()) 또 뭐 불 불여시?",
+          "standard_form": "무슨 막 (()) 또 뭐 불 불여시?"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\016.한국어 방언 발화 데이터(제주도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)제주도_학습용데이터_1\\DZES20000914.json",
+          "utterance_index": 85,
+          "utterance_id": "DZES20000914.1.1.86",
+          "form": "아닐텐데 왜냐하면 그 (()) 소장님네도 (된.)/(됐어.)",
+          "dialect_form": "아닐텐데 왜냐하면 그 (()) 소장님네도 된.",
+          "standard_form": "아닐텐데 왜냐하면 그 (()) 소장님네도 됐어."
+        }
+      ],
+      "source_double_round": [
+        {
+          "path": "D:\\방언 데이터 총정리\\016.한국어 방언 발화 데이터(제주도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)제주도_학습용데이터_1\\DZJD20001116.json",
+          "utterance_index": 24,
+          "utterance_id": "DZJD20001116.1.1.25",
+          "form": "((열xxx)) 모두 밖으로만 다 (해대신디)/(해댔는데) 내려갈 수가 (이시쿠과)/(있겠어요) 온도 (상승이주)/(상승이지) 완전",
+          "dialect_form": "((열xxx)) 모두 밖으로만 다 해대신디 내려갈 수가 이시쿠과 온도 상승이주 완전",
+          "standard_form": "((열xxx)) 모두 밖으로만 다 해댔는데 내려갈 수가 있겠어요 온도 상승이지 완전"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\016.한국어 방언 발화 데이터(제주도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)제주도_학습용데이터_1\\DZHF20001983.json",
+          "utterance_index": 8,
+          "utterance_id": "DZHF20001983.1.1.9",
+          "form": "무슨 막 (()) 또 뭐 불 불여시?",
+          "dialect_form": "무슨 막 (()) 또 뭐 불 불여시?",
+          "standard_form": "무슨 막 (()) 또 뭐 불 불여시?"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\016.한국어 방언 발화 데이터(제주도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)제주도_학습용데이터_1\\DZES20000914.json",
+          "utterance_index": 85,
+          "utterance_id": "DZES20000914.1.1.86",
+          "form": "아닐텐데 왜냐하면 그 (()) 소장님네도 (된.)/(됐어.)",
+          "dialect_form": "아닐텐데 왜냐하면 그 (()) 소장님네도 된.",
+          "standard_form": "아닐텐데 왜냐하면 그 (()) 소장님네도 됐어."
+        }
+      ],
+      "shared_different_pair_pattern": [
+        {
+          "path": "D:\\방언 데이터 총정리\\016.한국어 방언 발화 데이터(제주도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)제주도_학습용데이터_1\\DZJD20001116.json",
+          "utterance_index": 117,
+          "utterance_id": "DZJD20001116.1.1.118",
+          "form": "여 여름은 (소못)/(무척) 온도가 사십 삼십칠 (도*까지)/ (도까지) 올라가 아이고 아이고 이거 원",
+          "dialect_form": "여 여름은 소못 온도가 사십 삼십칠 (도*까지)/ (도까지) 올라가 아이고 아이고 이거 원",
+          "standard_form": "여 여름은 무척 온도가 사십 삼십칠 (도*까지)/ (도까지) 올라가 아이고 아이고 이거 원"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\016.한국어 방언 발화 데이터(제주도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)제주도_학습용데이터_1\\DZHF20001983.json",
+          "utterance_index": 197,
+          "utterance_id": "DZHF20001983.1.1.198",
+          "form": "내 블로그(이)/(#이)",
+          "dialect_form": "내 블로그(이)/(#이)",
+          "standard_form": "내 블로그(이)/(#이)"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\016.한국어 방언 발화 데이터(제주도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)제주도_학습용데이터_1\\DZJD20000330.json",
+          "utterance_index": 187,
+          "utterance_id": "DZJD20000330.1.1.188",
+          "form": "@상호명(#이름#가)/(이라고하는 곳이) (생긴거라.)/(생긴거에요.)",
+          "dialect_form": "&company-name&(이랜헌디가)/(이라고하는 곳이) 생긴거라.",
+          "standard_form": "&company-name&(이랜헌디가)/(이라고하는 곳이) 생긴거에요."
+        }
+      ],
+      "changed_to_identical_with_round": [
+        {
+          "path": "D:\\방언 데이터 총정리\\016.한국어 방언 발화 데이터(제주도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)제주도_학습용데이터_1\\DZJD20001116.json",
+          "utterance_index": 126,
+          "utterance_id": "DZJD20001116.1.1.127",
+          "form": "((xxxx거가)) 다 이젠 (이)/(#이) 병들이",
+          "dialect_form": "((xxxx거가)) 다 이젠 이 병들이",
+          "standard_form": "((xxxx거가)) 다 이젠 #이 병들이"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\016.한국어 방언 발화 데이터(제주도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)제주도_학습용데이터_1\\DZJD20000011.json",
+          "utterance_index": 447,
+          "utterance_id": "DZJD20000011.1.1.448",
+          "form": "새벽 (한*시)/(한시) 두 시 아이들(왕)/(와서) 챙기고",
+          "dialect_form": "새벽 한*시 두 시 아이들(왕)/(와서) 챙기고",
+          "standard_form": "새벽 한시 두 시 아이들(왕)/(와서) 챙기고"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\016.한국어 방언 발화 데이터(제주도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)제주도_학습용데이터_1\\DZJD20000074.json",
+          "utterance_index": 86,
+          "utterance_id": "DZJD20000074.1.1.87",
+          "form": "((뭔가)) 이상한 게 (이)/(#이) 그 나 전남자친구 (이)/(#이)",
+          "dialect_form": "((뭔가)) 이상한 게 이 그 나 전남자친구 이",
+          "standard_form": "((뭔가)) 이상한 게 #이 그 나 전남자친구 #이"
+        }
+      ],
+      "empty_if_mlm_rule": [
+        {
+          "path": "D:\\방언 데이터 총정리\\016.한국어 방언 발화 데이터(제주도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)제주도_학습용데이터_1\\DZHF20001983.json",
+          "utterance_index": 9,
+          "utterance_id": "DZHF20001983.1.1.10",
+          "form": "(())",
+          "dialect_form": "(())",
+          "standard_form": "(())"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\016.한국어 방언 발화 데이터(제주도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)제주도_학습용데이터_1\\DZJD20000011.json",
+          "utterance_index": 503,
+          "utterance_id": "DZJD20000011.1.1.504",
+          "form": "(())",
+          "dialect_form": "(())",
+          "standard_form": "(())"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\016.한국어 방언 발화 데이터(제주도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)제주도_학습용데이터_1\\DZJD20000074.json",
+          "utterance_index": 131,
+          "utterance_id": "DZJD20000074.1.1.132",
+          "form": "((몰까?))",
+          "dialect_form": "((몰까?))",
+          "standard_form": "((몰까?))"
+        }
+      ]
+    },
+    "충청도": {
+      "source_round_without_pair_pattern": [
+        {
+          "path": "D:\\방언 데이터 총정리\\017.한국어 방언 발화 데이터(충청도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)충청도_학습데이터_1\\DCNA20001300.json",
+          "utterance_index": 11,
+          "utterance_id": "DCNA20001300.1.1.12",
+          "form": "그러니까 왜 아침에 머리는 (()) 땋아달라고 해 대충 묶고 가지.",
+          "dialect_form": "그러니까 왜 아침에 머리는 (()) 땋아달라고 해 대충 묶고 가지.",
+          "standard_form": "그러니까 왜 아침에 머리는 (()) 땋아달라고 해 대충 묶고 가지."
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\017.한국어 방언 발화 데이터(충청도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)충청도_학습데이터_1\\DCDG20000435.json",
+          "utterance_index": 26,
+          "utterance_id": "DCDG20000435.1.1.27",
+          "form": "왜냐하면은 나는 고등학교를 (()) 우리 반 애들이 제일 좋고 제일 재밌거든.",
+          "dialect_form": "왜냐하면은 나는 고등학교를 (()) 우리 반 애들이 제일 좋고 제일 재밌거든.",
+          "standard_form": "왜냐하면은 나는 고등학교를 (()) 우리 반 애들이 제일 좋고 제일 재밌거든."
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\017.한국어 방언 발화 데이터(충청도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)충청도_학습데이터_1\\DCDG20001943.json",
+          "utterance_index": 184,
+          "utterance_id": "DCDG20001943.1.1.185",
+          "form": "그런 식의 이제 발라드를 맨날 (()) 노래방을 가게 되면은 부르게 되는데 이제",
+          "dialect_form": "그런 식의 이제 발라드를 맨날 (()) 노래방을 가게 되면은 부르게 되는데 이제",
+          "standard_form": "그런 식의 이제 발라드를 맨날 (()) 노래방을 가게 되면은 부르게 되는데 이제"
+        }
+      ],
+      "source_double_round": [
+        {
+          "path": "D:\\방언 데이터 총정리\\017.한국어 방언 발화 데이터(충청도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)충청도_학습데이터_1\\DCNA20001300.json",
+          "utterance_index": 11,
+          "utterance_id": "DCNA20001300.1.1.12",
+          "form": "그러니까 왜 아침에 머리는 (()) 땋아달라고 해 대충 묶고 가지.",
+          "dialect_form": "그러니까 왜 아침에 머리는 (()) 땋아달라고 해 대충 묶고 가지.",
+          "standard_form": "그러니까 왜 아침에 머리는 (()) 땋아달라고 해 대충 묶고 가지."
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\017.한국어 방언 발화 데이터(충청도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)충청도_학습데이터_1\\DCDG20000435.json",
+          "utterance_index": 26,
+          "utterance_id": "DCDG20000435.1.1.27",
+          "form": "왜냐하면은 나는 고등학교를 (()) 우리 반 애들이 제일 좋고 제일 재밌거든.",
+          "dialect_form": "왜냐하면은 나는 고등학교를 (()) 우리 반 애들이 제일 좋고 제일 재밌거든.",
+          "standard_form": "왜냐하면은 나는 고등학교를 (()) 우리 반 애들이 제일 좋고 제일 재밌거든."
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\017.한국어 방언 발화 데이터(충청도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)충청도_학습데이터_1\\DCDG20001943.json",
+          "utterance_index": 184,
+          "utterance_id": "DCDG20001943.1.1.185",
+          "form": "그런 식의 이제 발라드를 맨날 (()) 노래방을 가게 되면은 부르게 되는데 이제",
+          "dialect_form": "그런 식의 이제 발라드를 맨날 (()) 노래방을 가게 되면은 부르게 되는데 이제",
+          "standard_form": "그런 식의 이제 발라드를 맨날 (()) 노래방을 가게 되면은 부르게 되는데 이제"
+        }
+      ],
+      "shared_different_pair_pattern": [
+        {
+          "path": "D:\\방언 데이터 총정리\\017.한국어 방언 발화 데이터(충청도)\\01.데이터\\1.Training\\1.라벨링데이터_230913_add\\(비식별화완료)충청도_학습데이터\\DCEX20002119.json",
+          "utterance_index": 24,
+          "utterance_id": "DCEX20002119.1.1.25",
+          "form": "한국인이 오히려 쓰기에도 너무 쪼금 안 맞는 그런면들이 (쫌)/(조금) 많아서 그런 것들이(쫌)/(조금) 힘들지 않았나라는 생각을 했어 그리고 이제",
+          "dialect_form": "한국인이 오히려 쓰기에도 너무 쪼금 안 맞는 그런면들이 쫌 많아서 그런 것들이(쫌)/(조금) 힘들지 않았나라는 생각을 했어 그리고 이제",
+          "standard_form": "한국인이 오히려 쓰기에도 너무 쪼금 안 맞는 그런면들이 조금 많아서 그런 것들이(쫌)/(조금) 힘들지 않았나라는 생각을 했어 그리고 이제"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\017.한국어 방언 발화 데이터(충청도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)충청도_학습데이터_1\\DCEX20002065.json",
+          "utterance_index": 0,
+          "utterance_id": "DCEX20002065.1.1.1",
+          "form": "나는 결혼 해(가주고)/(가지고) 처음으로 아르바이트란 것을 한 번 해 봤어.",
+          "dialect_form": "나는 결혼 해(가주고)/(가지고) 처음으로 아르바이트란 것을 한 번 해 봤어.",
+          "standard_form": "나는 결혼 해(가주고)/(가지고) 처음으로 아르바이트란 것을 한 번 해 봤어."
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\017.한국어 방언 발화 데이터(충청도)\\01.데이터\\2.Validation\\(new3)라벨링데이터\\(비식별화완료)충청도_학습데이터_2\\DCEX20002117.json",
+          "utterance_index": 80,
+          "utterance_id": "DCEX20002117.1.1.81",
+          "form": "우리나라는 왜냐하면 어~국지적으로 지금 굉장히 그 뭐라 해야 댜~(쫌)/(조금) 섬처럼 이렇게 고립되어 있잖아 저기 북한이 있기 때문에",
+          "dialect_form": "우리나라는 왜냐하면 어~국지적으로 지금 굉장히 그 뭐라 해야 댜~(쫌)/(조금) 섬처럼 이렇게 고립되어 있잖아 저기 북한이 있기 때문에",
+          "standard_form": "우리나라는 왜냐하면 어~국지적으로 지금 굉장히 그 뭐라 해야 댜~(쫌)/(조금) 섬처럼 이렇게 고립되어 있잖아 저기 북한이 있기 때문에"
+        }
+      ],
+      "empty_if_mlm_rule": [
+        {
+          "path": "D:\\방언 데이터 총정리\\017.한국어 방언 발화 데이터(충청도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)충청도_학습데이터_1\\DCNA20000067.json",
+          "utterance_index": 58,
+          "utterance_id": "DCNA20000067.1.1.59",
+          "form": "((그때))",
+          "dialect_form": "((그때))",
+          "standard_form": "((그때))"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\017.한국어 방언 발화 데이터(충청도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)충청도_학습데이터_1\\DCDG20000637.json",
+          "utterance_index": 308,
+          "utterance_id": "DCDG20000637.1.1.309",
+          "form": "(())",
+          "dialect_form": "(())",
+          "standard_form": "(())"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\017.한국어 방언 발화 데이터(충청도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)충청도_학습데이터_1\\DCNA20001679.json",
+          "utterance_index": 166,
+          "utterance_id": "DCNA20001679.1.1.167",
+          "form": "(())",
+          "dialect_form": "(())",
+          "standard_form": "(())"
+        }
+      ],
+      "changed_to_identical_with_round": [
+        {
+          "path": "D:\\방언 데이터 총정리\\017.한국어 방언 발화 데이터(충청도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)충청도_학습데이터_1\\DCNA20001211.json",
+          "utterance_index": 74,
+          "utterance_id": "DCNA20001211.1.1.75",
+          "form": "그렇게 할라고 좀 해 봐라 왜 옛날보다 더 (꼬드덕거리나)/(#꼬드덕거리나) 아나 막 (()) 그런데",
+          "dialect_form": "그렇게 할라고 좀 해 봐라 왜 옛날보다 더 꼬드덕거리나 아나 막 (()) 그런데",
+          "standard_form": "그렇게 할라고 좀 해 봐라 왜 옛날보다 더 #꼬드덕거리나 아나 막 (()) 그런데"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\017.한국어 방언 발화 데이터(충청도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)충청도_학습데이터_1\\DCNA20002434.json",
+          "utterance_index": 47,
+          "utterance_id": "DCNA20002434.1.1.48",
+          "form": "(()) (#이름#네)/(##이름#) 건강이 첫 째니까 열심히 운동한다 생각하고 그냥 그렇게 열심히 다니면서",
+          "dialect_form": "(()) 도이텐네 건강이 첫 째니까 열심히 운동한다 생각하고 그냥 그렇게 열심히 다니면서",
+          "standard_form": "(()) #도이텐네 건강이 첫 째니까 열심히 운동한다 생각하고 그냥 그렇게 열심히 다니면서"
+        },
+        {
+          "path": "D:\\방언 데이터 총정리\\017.한국어 방언 발화 데이터(충청도)\\01.데이터\\1.Training\\(new3)라벨링데이터\\(비식별화완료)충청도_학습데이터_1\\DCEX20002013.json",
+          "utterance_index": 67,
+          "utterance_id": "DCEX20002013.1.1.68",
+          "form": "다 몰려서 (한티로)/(#한티로) (한티로)/(#한티로) 몰려(가주구)/(가지고)",
+          "dialect_form": "다 몰려서 한티로 한티로 몰려(가주구)/(가지고)",
+          "standard_form": "다 몰려서 #한티로 #한티로 몰려(가주구)/(가지고)"
+        }
+      ]
+    }
+  }
+}

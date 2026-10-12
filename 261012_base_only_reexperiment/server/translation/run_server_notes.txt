@@ -1,0 +1,34 @@
+번역 실험 서버 실행
+
+server 디렉토리를 통째로 서버에 옮긴 뒤, 먼저 region_classification/run_server.py로
+새 데이터의 토크나이저와 네 MLM 인코더를 학습합니다.
+
+이 디렉토리에서 준비 상태 확인:
+  python run_server.py --check-only
+
+학습 실행 및 중단 후 재개:
+  python run_server.py
+
+check-only는 Python 표준 라이브러리만 사용합니다. 준비 데이터와 원본 코드의
+SHA256을 확인하고, MLM 학습 전이면 인코더 네 개를 PENDING으로 표시합니다.
+실제 실행에는 네 인코더가 모두 필요합니다. 원본 runner의 GPU/패키지 검사를
+그대로 거치므로 기존 실험과 같은 서버 환경을 사용하십시오.
+
+data/translation의 train/validation/test TSV, data/corpus의 표준어 corpus 세 개,
+data/preparation_metadata.json, 인접 분류 디렉토리의 split manifest,
+server/bundle_ready.json 및 server/original_code_sha256.json이 필요합니다.
+원본 JSON은 서버로 옮기지 않습니다. metadata/manifest의 Windows 원본 경로는
+추적용으로 남으며 서버에서 해당 JSON을 다시 읽지 않습니다.
+
+원본 260811 코드는 수정하지 않았습니다. wrapper는 새 분류 디렉토리의
+data/corpus_split_manifest_80_10_10.csv와 outputs/mlm만 명시하여 원본 runner를
+호출합니다. 준비 metadata가 있으므로 원본의 JSON 전처리 단계는 건너뜁니다.
+--overwrite, --smoke, 다른 MLM 경로 및 학습 조건 변경 인자는 허용하지 않습니다.
+원본 run_full_experiment.py를 직접 실행하면 이전 260807 경로를 참조하므로,
+이번 실험은 반드시 run_server.py를 사용하십시오.
+
+표준어 디코더는 seed 42에서 3 epochs 사전학습하고, 변환 파인튜닝은
+13, 21, 42, 87, 100의 다섯 시드로 수행합니다. 원본 설정대로 검증집합에서
+지역 비율에 따라 50,000쌍을 seed 42로 선택하여 chrF++로 모델을 선택하고,
+Test는 전체를 평가합니다. 최대 길이 128, beam 4, 학습률, 배치, 모델 구조,
+전처리 후 토큰화 및 GPU 측정 방식 등 원본 학습 기본값은 유지됩니다.

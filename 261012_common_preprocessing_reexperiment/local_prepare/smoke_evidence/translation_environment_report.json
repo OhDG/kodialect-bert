@@ -1,0 +1,97 @@
+{
+  "completed": true,
+  "checked_utc": "2026-10-12T12:34:20.008654+00:00",
+  "python": "3.10.11 (tags/v3.10.11:7d4cc5a, Apr  5 2023, 00:38:17) [MSC v.1929 64 bit (AMD64)]",
+  "executable": "D:\\documents\\project_1\\git\\kodialect-bert\\261012_common_preprocessing_reexperiment\\.venv_smoke\\Scripts\\python.exe",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "cpu_requested": true,
+  "metadata_only": false,
+  "packages": {
+    "torch": {
+      "installed": true,
+      "version": "2.0.1+cpu",
+      "import_passed": true
+    },
+    "transformers": {
+      "installed": true,
+      "version": "4.40.1",
+      "import_passed": true
+    },
+    "datasets": {
+      "installed": true,
+      "version": "2.19.1",
+      "import_passed": true
+    },
+    "tokenizers": {
+      "installed": true,
+      "version": "0.19.1",
+      "import_passed": true
+    },
+    "numpy": {
+      "installed": true,
+      "version": "1.26.4",
+      "import_passed": true
+    },
+    "pyarrow": {
+      "installed": true,
+      "version": "15.0.2",
+      "import_passed": true
+    },
+    "accelerate": {
+      "installed": true,
+      "version": "1.14.0",
+      "import_passed": true
+    },
+    "scikit-learn": {
+      "installed": true,
+      "version": "1.4.2",
+      "import_passed": true
+    },
+    "sentencepiece": {
+      "installed": true,
+      "version": "0.2.0",
+      "import_passed": true
+    },
+    "tqdm": {
+      "installed": true,
+      "version": "4.70.1",
+      "import_passed": true
+    },
+    "psutil": {
+      "installed": true,
+      "version": "7.2.2",
+      "import_passed": true
+    },
+    "nvidia-ml-py": {
+      "installed": true,
+      "version": "13.610.43",
+      "import_passed": true
+    },
+    "huggingface-hub": {
+      "installed": true,
+      "version": "0.35.1",
+      "import_passed": true
+    },
+    "sacrebleu": {
+      "installed": true,
+      "version": "2.6.0",
+      "import_passed": true
+    },
+    "rapidfuzz": {
+      "installed": true,
+      "version": "3.14.5",
+      "import_passed": true
+    }
+  },
+  "errors": [],
+  "warnings": [
+    "Trainer construction passed; run smoke_test.py to verify training and generation."
+  ],
+  "stage": "translation",
+  "trainer_probe_passed": true,
+  "training_smoke_passed": false,
+  "torch_cuda_build": null,
+  "cuda_available": false,
+  "trainer_device": "cpu",
+  "optimizer_class": "AdamW"
+}

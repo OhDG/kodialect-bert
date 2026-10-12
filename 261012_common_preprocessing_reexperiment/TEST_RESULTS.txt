@@ -1,0 +1,56 @@
+로컬 검증 결과 (2026-10-12)
+
+1. 공통 전처리/구축/정합성/환경별 실행기 회귀 테스트: 32개 통과
+   python -m unittest discover -s local_prepare -p "test_*.py"
+   명확한 대응쌍, 모호한 괄호, 수학 표기, 고정 분할, 누락값, 추가 열,
+   공통 입력/캐시 정합성 및 서로 다른 Python 실행 경로를 검증했다.
+
+2. 지역 CPU 스모크: 11단계 모두 통과
+   server/smoke_runs/261012_122924_fe68/smoke_report.json
+   시험용 WordPiece 학습, 네 MLM, 네 지역 분류, 변경 문장 분석, 결과 집계.
+   각 학습 2 optimizer steps, 실제 저장/재로딩/forward와 유한 loss/metric 확인.
+   네 MLM의 동일한 초기 Transformer 가중치도 확인했다.
+
+3. 번역 CPU 스모크: 6단계 모두 통과
+   server/smoke_runs/261012_123419_5022/smoke_report.json
+   위 지역 시험에서 저장한 네 MLM 인코더를 읽어 표준어 CLM, 네 번역 학습,
+   문장 생성/chrF++/BLEU/CER/완전 일치율 계산 및 결과 집계를 실행했다.
+   저장된 모델을 다시 불러와 생성하는 단계도 통과했다.
+
+4. 확인한 환경과 한계
+   로컬 Windows/Python 3.10.11, torch 2.0.1+cpu, Transformers 4.40.1,
+   Datasets 2.19.1, Tokenizers 0.19.1, Accelerate 1.14.0, NumPy 1.26.4,
+   PyArrow 15.0.2를 사용했다. 번역은 SacreBLEU 2.6.0/RapidFuzz 3.14.5로 확인했다.
+   전체 conda 환경을 복제한 것은 아니며 실제 정보는 environment_report.json에 있다.
+   두 과제 시험은 별도로 실행했고, 로컬 동일한 임시 가상환경에서 번역 지표 패키지를
+   번역 환경 버전으로 맞춘 후 저장된 인코더를 재사용했다.
+   6계층/384차원 구조를 유지했으나 작은 합성 자료, 128개 시험용 KRD 어휘,
+   1개 파인튜닝 시드, 2 steps, batch2, 생성 길이16으로 축소했다.
+   CPU에서는 FP32/일반 AdamW를 사용했다. 서버 CUDA/FP16/fused AdamW,
+   별도 NVML 프로세스, 전체 코퍼스 메모리 및 장시간 안정성은 이 결과로 검증되지 않는다.
+   서버에서는 dialect1과 dialect_translate를 유지한 채 각 스모크를 실제 실행해야 한다.
+
+5. 초기 실패와 해결
+   Windows 콘솔 인코딩 문제는 시험 실행기 UTF-8 출력으로 해결했다.
+   Hugging Face 데이터 캐시의 긴 Windows lock 파일명은 시험 전용 짧은 임시 경로로 해결했다.
+   원본 실험 파일, 시스템 설정과 원본 데이터는 수정하지 않았다.
+   Accelerate 1.14.0은 실제 학습/생성까지 통과했으므로 낮추지 않았다.
+
+성공 보고서와 환경 기록의 작은 사본은 local_prepare/smoke_evidence/에 보관했다.
+시험 모델, 로그와 데이터는 server/smoke_runs/에 격리했고 Git에는 포함하지 않는다.
+이 작은 시험에서 나온 수치는 연구 성능으로 사용하지 않는다.
+
+6. 전체 구축 데이터 정합성: PASS
+   server/verification_report.json의 completed=true 확인.
+   원본 JSON 34,213개의 고정 분할 및 코드 원본 18개를 검증했다.
+   학습/검증/평가의 모든 분류·MLM·번역 입력 11,108,703개를 행별 대조했다.
+   번역 정답/표준어 CLM corpus, 변경 문장 캐시 및 전송 대상 53개 파일의 SHA256도 확인했다.
+   run_all.py --check-only 역시 성공했다. 새 본 실험용 MLM은 아직 학습하지 않았으므로
+   네 인코더가 PENDING인 것은 정상이며, 시험용 모델을 대신 연결하지 않았다.
+
+7. 전송 압축 검증: PASS
+   artifacts/prepared_data.tar.gz: 1,342,084,920 bytes (약 1.34 GB)
+   SHA256: 85ad0aa459f87eee58fec3f2ef6cbc00397629ce7ebff94515fd43c75ad90cc2
+   압축을 스트리밍으로 읽어 19개 내용물의 크기와 SHA256이 검증된 준비 파일과
+   전부 일치하는지 확인했다. 결과: artifacts/archive_verification.json.
+   코드와 작은 보고서만 Git에 올리고, 이 압축 및 .sha256은 별도로 옮긴다.

@@ -1,0 +1,110 @@
+서버 환경 확인과 격리된 실행 시험
+
+1. 제공된 dialect1(지역 분류), dialect_translate(번역) 환경의 Python 3.10, torch 2.0.1+cu117,
+   Transformers 4.40.1, Datasets 2.19.1, Tokenizers 0.19.1, NumPy 1.26.4,
+   PyArrow 15.0.2, Accelerate 1.14.0을 기준으로 확인합니다.
+   두 환경을 구분하여 유지합니다. dialect_translate에는 SacreBLEU 2.6.0,
+   RapidFuzz 3.14.5가 있으므로 다른 버전으로 낮추지 않습니다.
+   두 목록에 sentencepiece가 없고, dialect_translate에는 nvidia-ml-py도 없습니다.
+   패키지는 자동 설치하거나 교체하지 않습니다. 필요할 때만 다음 명령을 사용합니다.
+
+   conda activate dialect1
+   python -m pip install -r requirements_region_compat.txt
+   python -m pip check
+   python environment_check.py --stage region
+
+   conda activate dialect_translate
+   python -m pip install -r requirements_translation_compat.txt
+   python -m pip check
+   python environment_check.py --stage translation
+
+   requirements 파일은 torch/CUDA 빌드를 교체하지 않습니다. 기존 CUDA torch를
+   유지하십시오. environment_check는 버전/실제 import/Trainer와 optimizer 생성까지
+   검사하며, 이것만 통과했다고 학습 성공을 보장하지 않습니다.
+
+2. 환경을 나눈 실행 시험:
+
+   conda activate dialect1
+   python smoke_test.py --stage region
+
+   성공 출력의 server/smoke_runs/<시간_ID> 경로를 다음 명령에 지정합니다.
+
+   conda activate dialect_translate
+   python smoke_test.py --stage translation --region-run /절대경로/server/smoke_runs/<앞선_지역분류_시험>
+
+   기본 stage는 region입니다. 두 환경을 합치는 것이 아니라 번역 환경이 앞선
+   시험의 네 MLM 인코더를 읽습니다. 하나의 환경에서 모든 의존성을 의도적으로
+   갖춘 경우에만 --stage all을 선택할 수 있습니다.
+
+   각 실행은 server/smoke_runs/<시간_ID>/ 안에만 데이터, 모델, 캐시와 로그를
+   만듭니다. Windows에서는 긴 lock 파일명 제한을 피하기 위해 Hugging Face
+   데이터셋 임시 캐시만 고유한 %TEMP%/kdsm_* 디렉토리에 둡니다. 그 경로도
+   smoke_report.json에 기록합니다. production data/outputs/tokenizer는 사용하지 않습니다.
+   첫 실행에는 실제 KLUE-BERT, KoBERT, mBERT 토크나이저 다운로드가 필요합니다.
+   공개 토크나이저를 받지 못하면 해당 단계에서 실패로 기록합니다.
+
+   원본 학습 모듈을 그대로 불러와 다음 단계를 실제로 실행합니다.
+   - 합성 학습 문장으로 시험용 KRD WordPiece 어휘 학습
+   - 네 실제 토크나이저 조건별 MLM 학습, 저장 및 모델 재로딩
+   - 네 조건의 지역 분류 학습, 평가와 변경/동일 문장 분석 및 결과 집계
+   - 공통 표준어 디코더의 CLM 학습
+   - 네 인코더와 디코더의 번역 학습, 생성, chrF++/BLEU/CER/일치율 평가 및 집계
+
+   합성 TSV에는 추가 utterance_id 열과 괄호·대괄호·따옴표·옛한글/자모 표기를
+   포함하여 원본 loader와 tokenization을 통과시킵니다. 원문에서는 양쪽에 같은
+   이중전사 표기가 있어도 정리 후에는 달라지는 사례를 넣어, 변경 문장 분석이
+   원본 JSON을 다시 읽지 않고 정리된 문장에 맞춘 cache를 사용하는지 확인합니다.
+
+   모델 구조는 기존 6계층/은닉384/6heads/FF1536을 유지합니다. 시험에 한해
+   각 학습을 2 optimizer steps, batch 2, downstream seed 13 하나로 줄입니다.
+   생성 길이는 16, 검증/평가는 10문장이며 beam 4를 유지합니다.
+   파인튜닝 모델 선택과 모델 저장은 원본 코드로 수행하고, 별도 재로딩 이후
+   실제 forward 또는 generate까지 확인합니다. 원본 파일은 수정하지 않습니다.
+
+   시험용 KRD 어휘는 합성 자료로 학습한 128개 어휘입니다. 실제 방언 코퍼스로
+   학습하는 32,000개 어휘의 품질이나 전체 데이터 학습을 검증하는 시험이 아닙니다.
+   합성 문장에는 반복과 split 간 동일 문장이 있어 성능 수치는 연구 결과로 사용할 수
+   없습니다. 시험 모델/토크나이저를 본 실험에 재사용하지 마십시오.
+
+   각 stage의 성공은 해당 단계들의 실제 실행과 저장/재로딩/생성을 확인한 뒤에만 smoke_report.json의
+   completed=true, status=passed로 기록합니다. 실패하면 failed_stage와 로그를 남깁니다.
+   한 번의 2-step 시험이 전체 코퍼스 메모리 사용, 장시간 안정성, 5시드 성능을 보장하지는
+   않습니다. 시험 산출물은 모델 저장 때문에 수 GB의 디스크를 사용할 수 있습니다.
+   원본 학습 코드의 PyTorch 메모리 기록은 실행되지만, 별도 NVML/nvidia-smi
+   모니터 프로세스와 GPU 점유율 수집까지 검증하는 시험은 아닙니다.
+
+3. 로컬 CPU에서 기능만 확인하려면:
+
+   python environment_check.py --stage region --cpu
+   python smoke_test.py --stage region --cpu
+   python environment_check.py --stage translation --cpu
+   python smoke_test.py --stage translation --region-run <앞선_지역분류_시험> --cpu
+
+   CPU 시험에만 FP32와 일반 AdamW를 사용합니다. CUDA/FP16/fused optimizer와
+   GPU 자원 측정의 검증으로 간주하지 않습니다. 환경 패키지는 같은 핵심 버전을
+   사용하되 torch 2.0.1의 CPU 빌드를 사용할 수 있습니다.
+
+   학습 없이 원본 해시, 구문과 단계 계획만 확인하려면:
+   python smoke_test.py --stage region --dry-run
+   python smoke_test.py --stage translation --dry-run
+   dry-run은 학습 시험 통과로 기록하지 않습니다.
+
+4. Accelerate에 관하여:
+   Transformers 4.40.1 공식 Trainer는 Accelerate 0.28 이상에서 dispatch_batches를
+   DataLoaderConfiguration으로 전달합니다. 따라서 첨부된 Accelerate 1.14.0이라는
+   이유만으로 dispatch_batches 오류를 단정하거나 자동으로 다운그레이드하지 않습니다.
+   실제 환경 검사와 학습 시험에서 발견한 오류를 기준으로 대응합니다.
+   확인한 공식 소스:
+   https://github.com/huggingface/transformers/blob/v4.40.1/src/transformers/trainer.py
+   https://github.com/huggingface/accelerate/blob/v1.14.0/setup.py
+
+5. 2026-10-12 로컬 CPU 실행 결과:
+   - 지역 분류 단계 11개 PASS: smoke_runs/261012_122924_fe68/smoke_report.json
+   - 번역 단계 6개 PASS: smoke_runs/261012_123419_5022/smoke_report.json
+   핵심 패키지 버전을 유지한 Python 3.10 / torch 2.0.1+cpu에서 실제 학습,
+   저장·재로딩, 생성과 지표 계산을 수행했습니다. 번역 시험에는 제공된 번역
+   환경과 같은 SacreBLEU 2.6.0 / RapidFuzz 3.14.5를 사용했습니다.
+   두 가상환경을 합친 것이 아니라 로컬 검증용 별도 venv에서 각 단계별 의존성을
+   확인한 결과입니다. 서버의 CUDA/FP16/fused optimizer/NVML 검증은 남아 있으며,
+   서버에 옮긴 뒤 2번 명령을 두 conda 환경에서 각각 실행하십시오.
+   원본 실험 코드 18개는 시험 전후 SHA256이 동일했습니다.

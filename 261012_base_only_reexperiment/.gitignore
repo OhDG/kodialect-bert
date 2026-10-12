@@ -1,0 +1,17 @@
+**/__pycache__/
+local_prepare/.venv/
+local_prepare/_staging*/
+local_prepare/.staging*/
+local_prepare/build_staging/
+local_prepare/source_counts.jsonl
+local_prepare/source_manifest.csv
+server/region_classification/data/
+server/translation/data/
+server/**/cache*/
+server/**/outputs*/
+server/**/logs*/
+server/**/results*/
+server/**/dialect_bert_tokenizer*/
+server/bundle_ready.json
+server/verification_report.json
+server/transfer_manifest.json

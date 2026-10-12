@@ -1,0 +1,55 @@
+2026-10-12 기존 발화 자료 재실험: 로컬 데이터 구축 완료
+
+확정 구성
+- 강원도, 경상도, 제주도, 충청도: 새 한국어 방언 발화 데이터의 JSON 전체
+- 전라도: 기존 project1_dataset의 JSON 7,412개만 사용
+- 새 전라도 Validation, 중·노년층 자료, TXT만 있는 자료, ZIP 중복본 제외
+- 문장 내용 중복 제거 규칙은 추가하지 않음
+- 기존 전처리와 파일 단위 seed 42, 약 8:1:1 분할 유지
+- 번역 데이터는 분류 데이터와 같은 원본 파일 분할 사용
+
+지역별 규모 (분류는 전처리 후 입력 수, 번역은 유효 방언-표준어 쌍 수)
+지역 | JSON 파일 | 지역 분류 | 번역
+강원도 | 5,545 | 1,849,591 | 1,850,036
+경상도 | 8,542 | 2,317,907 | 2,318,214
+전라도 | 7,412 | 1,990,314 | 1,992,101
+제주도 | 5,638 | 3,088,333 | 3,108,059
+충청도 | 7,076 | 2,176,484 | 2,177,003
+합계 | 34,213 | 11,422,629 | 11,445,413
+
+분할별 규모
+집합 | 지역 분류 | 번역
+학습 | 9,136,388 | 9,154,635
+검증 | 1,143,040 | 1,145,356
+평가 | 1,143,201 | 1,145,422
+
+검증 완료
+- 34,213개 원본 JSON의 해시와 실제 추출 수량을 생성 시 확인
+- 원본 학습/평가 코드 및 requirements 18개와 복사본의 SHA256 일치
+- 전체 TSV와 corpus의 행, 레이블, 파일별 분할, 번역 쌍 검증 통과
+- 분류 평가용 변경 문장 캐시의 문장과 지역 정렬 확인
+- 전송 대상 42개 파일의 해시 기록: 4,944,167,319 bytes (4.60 GiB)
+- run_all.py --check-only 통과; 토크나이저/모델 학습은 로컬에서 실행하지 않음
+
+디렉터리
+- local_prepare/: 로컬 JSON 전처리 코드, 출처 목록, 구축 보고서
+- server/region_classification/: 기존 260819 지역 분류 코드 및 준비 데이터
+- server/translation/: 기존 260811 번역 코드 및 준비 데이터
+- server/: 연구실 서버로 옮길 전체 폴더
+
+서버 실행
+1. server 폴더 전체를 복사 (Git으로 제외된 data와 results/changed_flags_cache.npz도 포함)
+2. 기존 실험에 사용한 연구실 서버 환경 활성화
+3. server 폴더에서 python run_all.py --check-only
+4. 전송 후 전체 무결성 확인: python verify_bundle.py --full
+5. python run_all.py
+토크나이저 학습 -> 네 MLM 인코더 학습 -> 5개 시드 지역 분류 및 변경 문장 분석 -> 표준어 CLM 디코더 -> 5개 시드 번역 순서로 실행
+처음 check-only에서 번역 인코더 PENDING은 정상이며, 앞선 지역 분류 실행에서 새 데이터로 생성한다.
+
+참조
+- README.txt
+- server/SERVER_RUN.txt
+- local_prepare/build_report.json
+- server/verification_report.json
+- server/transfer_manifest.json
+- local_prepare/overlap_audit/jeolla_sentence_overlap.txt

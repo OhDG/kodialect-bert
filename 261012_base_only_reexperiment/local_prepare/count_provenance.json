@@ -1,0 +1,16 @@
+{
+  "normalizer_function": "def clean_base_text(text: str) -> str:\n    cleaned = re.sub(r\"\\([^)]*\\)|\\[[^\\]]*\\]\", \"\", text)\n    return re.sub(r\"[^가-힣a-zA-Z0-9.,?! ]\", \"\", cleaned).strip()",
+  "helper_hashes": {
+    "region_classification/step1_prepare_data_80_10_10.py": "0b448762e31e156564ff2cd79ec54534082af6c411d29d9c34f93a51d6484f52",
+    "translation/experiment_common.py": "184d67baa77bbbca12170e758cd2c15f9663dcfa7db563bccdbc29884772aa2e"
+  },
+  "audit": {
+    "requested": true,
+    "path": "C:\\Users\\ohdon\\Documents\\KoDialectBERT\\tmp\\base_corpus_comparison_20261012\\per_file_counts.jsonl",
+    "compatible": true,
+    "usable_path_count": 46589,
+    "sha256": "154f246c0ed9495c6e3ae62f3d90fc06f6c0930d3d838d2719a9b92094625582"
+  },
+  "audit_count_files": 34213,
+  "fresh_count_files": 0
+}

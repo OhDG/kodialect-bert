@@ -1,0 +1,4 @@
+# Backward-compatible alias for the REGION environment only.
+# Use requirements_translation_compat.txt in dialect_translate.
+# Neither file installs/replaces torch or a CUDA build.
+-r requirements_region_compat.txt

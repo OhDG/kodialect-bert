@@ -1,0 +1,91 @@
+연구실 서버 실행 순서: 두 가상환경을 그대로 사용
+
+1. Git으로 261012_common_preprocessing_reexperiment 코드를 가져온다.
+   준비된 대용량 데이터는 Git에 포함하지 않는다. 로컬 artifacts 폴더의
+   prepared_data.tar.gz와 prepared_data.tar.gz.sha256을 서버의 같은
+   실험 디렉터리 아래 artifacts/로 별도 전송한다.
+   원본 JSON과 로컬 가상환경은 서버로 옮길 필요가 없다.
+
+2. 실험 디렉터리에서 압축파일을 확인하고 준비 데이터를 푼다.
+
+   (cd artifacts && sha256sum -c prepared_data.tar.gz.sha256)
+   tar -xzf artifacts/prepared_data.tar.gz -C server
+   cd server
+
+   이 압축은 이번 새 실험의 준비 데이터와 검증 기록이다. 이전 실험의
+   data, outputs, cache, tokenizer와 섞지 않는다.
+
+3. 지역 분류에는 dialect1, 번역에는 dialect_translate를 유지한다.
+   두 환경의 torch 2.0.1+cu117, Transformers 4.40.1, Datasets 2.19.1,
+   Tokenizers 0.19.1 등 핵심 버전은 같다. 학습한 모델은 파일로 전달되므로
+   같은 가상환경으로 합칠 필요가 없다. 각 환경의 의존성 확인과 짧은 시험은
+   SMOKE_TEST.txt에 적힌 명령을 따른다. 자동 설치/환경 교체는 하지 않는다.
+
+   conda activate dialect1
+   python -m pip install -r requirements_region_compat.txt
+   python environment_check.py --stage region
+   python smoke_test.py --stage region
+
+   conda activate dialect_translate
+   python -m pip install -r requirements_translation_compat.txt
+   python environment_check.py --stage translation
+   python smoke_test.py --stage translation --region-run smoke_runs/<앞에서_성공한_분류_실행ID>
+
+   <앞에서_성공한_분류_실행ID>는 분류 시험 종료 시 출력되는 실제 폴더명으로 바꾼다.
+   성공 보고서를 확인한 뒤 본 실험으로 넘어간다. 번역 환경의 SacreBLEU 2.6.0과
+   RapidFuzz 3.14.5는 유지하며, 두 환경의 torch/CUDA 빌드는 교체하지 않는다.
+
+4. 데이터 전송 상태를 확인한다.
+
+   conda activate dialect1
+   python verify_bundle.py --full
+   python run_all.py --check-only
+
+   --full은 모든 행의 공통 입력 일치, 분할, 캐시와 전송 파일 SHA256을 검사한다.
+   MLM 학습 전 번역 인코더가 PENDING으로 표시되는 것은 정상이다.
+   스모크테스트 성공 후 아래 본 실험을 실행한다.
+
+5. 환경을 바꾸어 순서대로 실행하는 방법:
+
+   conda activate dialect1
+   python region_classification/run_server.py
+   python region_classification/run_server.py --analyze-only
+   conda activate dialect_translate
+   python translation/run_server.py
+
+   한 번의 명령으로 연결하는 방법(제공된 서버의 환경 경로):
+
+   python run_all.py --region-python /data/ohdg/anaconda3/envs/dialect1/bin/python --translation-python /data/ohdg/anaconda3/envs/dialect_translate/bin/python
+
+   이 실행기는 지정한 인터프리터로 순서대로 실행한다. 가상환경 자체를 변경하지 않는다.
+   실행 순서는 토크나이저 학습, 네 MLM/5시드 지역 분류, 변경 문장 분석,
+   표준어 CLM 디코더, 네 조건/5시드 번역이다.
+
+보존한 조건과 바뀐 데이터
+- 원본 학습/평가 Python 코드와 추가 requirements 파일 18개는 바이트 단위로 동일하다.
+- original_code_sha256.json으로 원본 보존을 검사한다.
+- run_server.py는 준비 데이터 확인, 원본 JSON 전처리 생략, 새 실험 경로 연결을 담당한다.
+- 기존 34,213개 JSON의 파일별 train/validation/test 배정을 그대로 사용했다.
+  정제 후 문장 수가 바뀌므로 문장 수의 실제 비율은 정확한 8:1:1이 아닐 수 있다.
+- 모든 과제에 같은 공통 방언 입력을 사용한다. 규칙과 출처는 PREPROCESSING_POLICY.txt에 있다.
+- MLM seed42, 다운스트림 seeds13/21/42/87/100 및 학습 코드의 기본값은 유지한다.
+- 번역 모델 선택은 원본과 동일하게 지역 비율로 표집한 검증 50,000쌍을 사용한다.
+- 클래스 가중치와 epoch당 스텝 수는 새 데이터에 따라 다시 계산된다.
+- CSV의 Windows JSON 경로는 출처 기록이다. 서버 학습에서는 열지 않는다.
+- 변경 문장 캐시의 changed_clean은 이번 공통 정제 후 입력과 정답의 비교다.
+  changed_raw는 원본 필드의 NFKC/공백 정규화 비교이며 주요 기준은 changed_clean이다.
+- 준비 데이터는 원본 step1로 다시 만들지 않는다. 변경 문장 분석에 --rebuild를 쓰지 않는다.
+- 중단 후 같은 실행 명령을 다시 사용하면 원본 실행기의 완료 검사/학습 재개 로직을 따른다.
+- CPU 시험은 서버 CUDA/FP16/fused optimizer나 전체 규모의 메모리 사용을 보장하지 않는다.
+  서버의 두 환경에서 스모크테스트를 실행해 실제 동작을 확인한다.
+
+결과 위치
+- region_classification/results/final_results.md
+- region_classification/results/changed_subset_results.md
+- translation/results/final_results.md
+- run_records/<실행ID>/run_provenance.json: run_all의 실제 실행 인터프리터와 경로 기록
+
+번역 원본 집계 코드가 final_results.md에 출력하는 '260807 MLM 재사용' 설명은
+과거 실험 경로를 하드코딩한 문구다. 이번 실행은 인접 region_classification/outputs/mlm의
+새 공통 전처리 인코더를 사용한다. 원본 코드 보존을 위해 해당 문구 자체는 고치지 않았으며,
+실제 실행 경로는 run_server.py, 학습 로그와 run_provenance.json을 기준으로 확인한다.

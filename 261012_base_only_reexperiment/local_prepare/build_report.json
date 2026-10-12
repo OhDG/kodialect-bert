@@ -1,0 +1,163 @@
+{
+  "completed": true,
+  "completed_at_utc": "2026-10-12T11:27:04.811570+00:00",
+  "scope": "Five-region base JSON only; no senior datasets, ZIPs, TXTs, or content deduplication.",
+  "old_root": "D:\\documents\\project_1\\git\\project1_dataset",
+  "new_root": "D:\\방언 데이터 총정리",
+  "include_new_jeolla_validation": false,
+  "selected_file_counts": {
+    "강원도": 5545,
+    "경상도": 8542,
+    "전라도": 7412,
+    "제주도": 5638,
+    "충청도": 7076
+  },
+  "official_origin_counts": {
+    "강원도 | new_download | Training": 4717,
+    "강원도 | new_download | Validation": 828,
+    "경상도 | new_download | Training": 7699,
+    "경상도 | new_download | Validation": 843,
+    "전라도 | old_project1_dataset | legacy_flattened": 7412,
+    "제주도 | new_download | Validation": 596,
+    "제주도 | new_download | Training": 5042,
+    "충청도 | new_download | Training": 6296,
+    "충청도 | new_download | Validation": 780
+  },
+  "total_selected_files": 34213,
+  "raw_utterance_counts": {
+    "강원도": 1850036,
+    "경상도": 2318214,
+    "전라도": 1992101,
+    "제주도": 3108059,
+    "충청도": 2177003
+  },
+  "classification": {
+    "completed": true,
+    "split_sentence_counts": {
+      "train": 9136388,
+      "validation": 1143040,
+      "test": 1143201
+    },
+    "split_file_counts": {
+      "train": 27373,
+      "validation": 3411,
+      "test": 3429
+    },
+    "region_sentence_counts": {
+      "강원도": {
+        "train": 1479220,
+        "validation": 185370,
+        "test": 185001
+      },
+      "경상도": {
+        "train": 1853959,
+        "validation": 231949,
+        "test": 231999
+      },
+      "전라도": {
+        "train": 1591914,
+        "validation": 199195,
+        "test": 199205
+      },
+      "제주도": {
+        "train": 2470353,
+        "validation": 308850,
+        "test": 309130
+      },
+      "충청도": {
+        "train": 1740942,
+        "validation": 217676,
+        "test": 217866
+      }
+    },
+    "skipped_file_count": 0,
+    "skipped_files": [],
+    "corpus_paths": {
+      "train": "D:\\documents\\project_1\\git\\kodialect-bert\\261012_base_only_reexperiment\\server\\region_classification\\data\\corpus\\dialect_train_corpus.txt",
+      "validation": "D:\\documents\\project_1\\git\\kodialect-bert\\261012_base_only_reexperiment\\server\\region_classification\\data\\corpus\\dialect_validation_corpus.txt",
+      "test": "D:\\documents\\project_1\\git\\kodialect-bert\\261012_base_only_reexperiment\\server\\region_classification\\data\\corpus\\dialect_test_corpus.txt"
+    },
+    "tsv_paths": {
+      "train": "D:\\documents\\project_1\\git\\kodialect-bert\\261012_base_only_reexperiment\\server\\region_classification\\data\\region_classification\\dialect_region_train.tsv",
+      "validation": "D:\\documents\\project_1\\git\\kodialect-bert\\261012_base_only_reexperiment\\server\\region_classification\\data\\region_classification\\dialect_region_validation.tsv",
+      "test": "D:\\documents\\project_1\\git\\kodialect-bert\\261012_base_only_reexperiment\\server\\region_classification\\data\\region_classification\\dialect_region_test.tsv"
+    },
+    "source_manifest": "D:\\documents\\project_1\\git\\kodialect-bert\\261012_base_only_reexperiment\\local_prepare\\source_manifest.csv",
+    "split_manifest": "D:\\documents\\project_1\\git\\kodialect-bert\\261012_base_only_reexperiment\\server\\region_classification\\data\\corpus_split_manifest_80_10_10.csv",
+    "ratios": {
+      "train": 0.8,
+      "validation": 0.1,
+      "test": 0.1
+    },
+    "seed": 42
+  },
+  "translation": {
+    "completed": true,
+    "split_manifest": "D:\\documents\\project_1\\git\\kodialect-bert\\261012_base_only_reexperiment\\server\\region_classification\\data\\corpus_split_manifest_80_10_10.csv",
+    "pair_counts": {
+      "train": 9154635,
+      "validation": 1145356,
+      "test": 1145422
+    },
+    "changed_counts": {
+      "train": 2621849,
+      "validation": 323906,
+      "test": 336276
+    },
+    "changed_fraction": {
+      "train": 0.2863957984124981,
+      "validation": 0.2827994090920203,
+      "test": 0.29358262718893124
+    },
+    "paired_file_counts": {
+      "train": 27373,
+      "validation": 3411,
+      "test": 3429
+    },
+    "region_pair_counts": {
+      "강원도": {
+        "train": 1479572,
+        "validation": 185430,
+        "test": 185034
+      },
+      "경상도": {
+        "train": 1854205,
+        "validation": 231982,
+        "test": 232027
+      },
+      "전라도": {
+        "train": 1593326,
+        "validation": 199369,
+        "test": 199406
+      },
+      "제주도": {
+        "train": 2486205,
+        "validation": 310833,
+        "test": 311021
+      },
+      "충청도": {
+        "train": 1741327,
+        "validation": 217742,
+        "test": 217934
+      }
+    },
+    "files_without_parallel_pairs": 0,
+    "skipped_file_count": 0
+  },
+  "audit_count_reuse": {
+    "requested": true,
+    "path": "C:\\Users\\ohdon\\Documents\\KoDialectBERT\\tmp\\base_corpus_comparison_20261012\\per_file_counts.jsonl",
+    "compatible": true,
+    "usable_path_count": 46589,
+    "sha256": "154f246c0ed9495c6e3ae62f3d90fc06f6c0930d3d838d2719a9b92094625582",
+    "audit_count_files": 34213,
+    "fresh_count_files": 0
+  },
+  "all_source_hashes_verified_while_writing": true,
+  "helper_hashes": {
+    "region_classification/step1_prepare_data_80_10_10.py": "0b448762e31e156564ff2cd79ec54534082af6c411d29d9c34f93a51d6484f52",
+    "translation/experiment_common.py": "184d67baa77bbbca12170e758cd2c15f9663dcfa7db563bccdbc29884772aa2e"
+  },
+  "seconds": 569.890999999945,
+  "server_ready_marker_written": false
+}

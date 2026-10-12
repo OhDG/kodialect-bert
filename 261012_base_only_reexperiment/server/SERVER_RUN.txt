@@ -1,0 +1,51 @@
+연구실 서버에서 실행
+
+1. 이 server 폴더 전체를 준비된 데이터와 함께 서버로 복사한다.
+   Git으로 코드만 가져오면 무시된 data/와 results/changed_flags_cache.npz가 빠진다.
+   원본 JSON과 local_prepare 폴더는 서버로 옮길 필요가 없다.
+
+2. 8월 19일 지역 분류 및 8월 11일 번역 실험에 사용한 연구실 서버 환경을 활성화한다.
+   복사된 requirements_260819.txt와 requirements_260811.txt는 추가 의존성 목록이다.
+   이 파일들만으로 기존 torch/transformers 등의 전체 환경을 재현하는 것은 아니다.
+   저장소 최상위 requirements.txt로 임의 업그레이드하지 않는다.
+
+3. server 폴더에서 데이터/코드 확인:
+   python run_all.py --check-only
+   python verify_bundle.py --full
+
+   첫 검사에서 번역용 MLM 인코더가 PENDING인 것은 지역 분류 실행 전의 정상 상태이다.
+   --full은 모든 데이터 행과 전송 파일을 검증하므로 시간이 걸린다.
+
+4. 전체 실행:
+   python run_all.py
+
+   실행 순서:
+   KRDiaBERT 토크나이저 학습
+   네 조건의 MLM 사전학습 및 조건별 5개 시드 지역 분류
+   지역 분류 변경 문장 분석
+   표준어 디코더 CLM 사전학습
+   네 조건별 5개 시드 방언에서 표준어로의 변환
+
+   개별 실행도 가능하다:
+   python region_classification/run_server.py
+   python region_classification/run_server.py --analyze-only
+   python translation/run_server.py
+
+5. 중단 후 같은 명령을 다시 실행하면 원본 실행기의 완료 검사/학습 재개 로직을 사용한다.
+   별도 실행 파일은 --overwrite, --smoke 및 학습 조건 변경 인자를 받지 않는다.
+   기존 실험의 outputs, cache, tokenizer를 이 폴더로 복사하지 않는다.
+
+보존 범위
+- 원본 학습/평가 Python 코드와 추가 requirements 파일 18개는 바이트 단위로 동일하다.
+- original_code_sha256.json으로 원본 코드 보존을 검사한다.
+- 별도 run_server.py는 준비된 데이터 확인, 데이터 준비 생략, 새 실험 경로 연결만 담당한다.
+- MLM seed42, 다운스트림 seeds13/21/42/87/100 및 각 학습 코드의 기본 조건을 유지한다.
+- 번역의 모델 선택에는 원본과 동일하게 지역 비율로 표집한 검증 50,000쌍을 사용한다.
+- 데이터에 따라 계산되는 클래스 가중치와 epoch당 학습 스텝 수는 새 데이터에 맞춰 달라진다.
+- CSV manifest 내부의 Windows JSON 경로는 출처 기록이다. 서버 학습에서는 접근하지 않는다.
+- 변경 문장 분석에 필요한 캐시는 로컬에서 함께 만든다. 서버에서 --rebuild를 사용하지 않는다.
+
+결과 위치
+- region_classification/results/final_results.md
+- region_classification/results/changed_subset_results.md
+- translation/results/final_results.md

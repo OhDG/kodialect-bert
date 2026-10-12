@@ -1,0 +1,178 @@
+{
+  "completed": true,
+  "status": "passed",
+  "cpu_only": true,
+  "selected_stage": "region",
+  "region_run": null,
+  "production_artifacts_used": false,
+  "run_dir": "D:\\documents\\project_1\\git\\kodialect-bert\\261012_common_preprocessing_reexperiment\\server\\smoke_runs\\261012_122924_fe68",
+  "stages": [
+    {
+      "stage": "tokenizer_common",
+      "seconds": 2.489927899907343,
+      "completed": true,
+      "trained_vocab_size": 128,
+      "synthetic_smoke_only": true
+    },
+    {
+      "stage": "mlm_dialect",
+      "seconds": 7.913453600020148,
+      "completed": true,
+      "reloaded_logits_shape": [
+        1,
+        12,
+        128
+      ],
+      "global_step": 2,
+      "finite_train_loss": 4.9802086353302,
+      "saved_checkpoint": "D:\\documents\\project_1\\git\\kodialect-bert\\261012_common_preprocessing_reexperiment\\server\\smoke_runs\\261012_122924_fe68\\region_outputs\\mlm\\dialect\\checkpoint-2",
+      "model_reloaded": true
+    },
+    {
+      "stage": "classify_dialect",
+      "seconds": 7.110241599963047,
+      "completed": true,
+      "reloaded_logits_shape": [
+        1,
+        5
+      ],
+      "global_step": 2,
+      "finite_train_loss": 1.6651784181594849,
+      "saved_checkpoint": "D:\\documents\\project_1\\git\\kodialect-bert\\261012_common_preprocessing_reexperiment\\server\\smoke_runs\\261012_122924_fe68\\region_outputs\\classifiers\\dialect\\seed_13\\checkpoint-2",
+      "model_reloaded": true,
+      "classification_metrics_checked": true
+    },
+    {
+      "stage": "mlm_klue",
+      "seconds": 19.414201500010677,
+      "completed": true,
+      "reloaded_logits_shape": [
+        1,
+        12,
+        32000
+      ],
+      "global_step": 2,
+      "finite_train_loss": 10.522990703582764,
+      "saved_checkpoint": "D:\\documents\\project_1\\git\\kodialect-bert\\261012_common_preprocessing_reexperiment\\server\\smoke_runs\\261012_122924_fe68\\region_outputs\\mlm\\klue\\checkpoint-2",
+      "model_reloaded": true
+    },
+    {
+      "stage": "classify_klue",
+      "seconds": 10.942619899986312,
+      "completed": true,
+      "reloaded_logits_shape": [
+        1,
+        5
+      ],
+      "global_step": 2,
+      "finite_train_loss": 1.6699731349945068,
+      "saved_checkpoint": "D:\\documents\\project_1\\git\\kodialect-bert\\261012_common_preprocessing_reexperiment\\server\\smoke_runs\\261012_122924_fe68\\region_outputs\\classifiers\\klue\\seed_13\\checkpoint-2",
+      "model_reloaded": true,
+      "classification_metrics_checked": true
+    },
+    {
+      "stage": "mlm_kobert",
+      "seconds": 12.768838800024241,
+      "completed": true,
+      "reloaded_logits_shape": [
+        1,
+        9,
+        8002
+      ],
+      "global_step": 2,
+      "finite_train_loss": 9.194812774658203,
+      "saved_checkpoint": "D:\\documents\\project_1\\git\\kodialect-bert\\261012_common_preprocessing_reexperiment\\server\\smoke_runs\\261012_122924_fe68\\region_outputs\\mlm\\kobert\\checkpoint-2",
+      "model_reloaded": true
+    },
+    {
+      "stage": "classify_kobert",
+      "seconds": 7.84784750000108,
+      "completed": true,
+      "reloaded_logits_shape": [
+        1,
+        5
+      ],
+      "global_step": 2,
+      "finite_train_loss": 1.6731685996055603,
+      "saved_checkpoint": "D:\\documents\\project_1\\git\\kodialect-bert\\261012_common_preprocessing_reexperiment\\server\\smoke_runs\\261012_122924_fe68\\region_outputs\\classifiers\\kobert\\seed_13\\checkpoint-2",
+      "model_reloaded": true,
+      "classification_metrics_checked": true
+    },
+    {
+      "stage": "mlm_mbert",
+      "seconds": 36.89609280007426,
+      "completed": true,
+      "reloaded_logits_shape": [
+        1,
+        15,
+        119547
+      ],
+      "global_step": 2,
+      "finite_train_loss": 11.705125331878662,
+      "saved_checkpoint": "D:\\documents\\project_1\\git\\kodialect-bert\\261012_common_preprocessing_reexperiment\\server\\smoke_runs\\261012_122924_fe68\\region_outputs\\mlm\\mbert\\checkpoint-2",
+      "model_reloaded": true
+    },
+    {
+      "stage": "classify_mbert",
+      "seconds": 49.78480650007259,
+      "completed": true,
+      "reloaded_logits_shape": [
+        1,
+        5
+      ],
+      "global_step": 2,
+      "finite_train_loss": 1.6443829536437988,
+      "saved_checkpoint": "D:\\documents\\project_1\\git\\kodialect-bert\\261012_common_preprocessing_reexperiment\\server\\smoke_runs\\261012_122924_fe68\\region_outputs\\classifiers\\mbert\\seed_13\\checkpoint-2",
+      "model_reloaded": true,
+      "classification_metrics_checked": true
+    },
+    {
+      "stage": "changed_common",
+      "seconds": 4.2764678000239655,
+      "completed": true,
+      "definition": "clean",
+      "total_rows": 10,
+      "rows_with_standard_form": 10,
+      "rows_without_standard_form": 0,
+      "changed_rows": 5,
+      "identity_rows": 5,
+      "changed_fraction_of_known": 0.5,
+      "changed_fraction_clean": 0.5,
+      "changed_fraction_raw": 0.0
+    },
+    {
+      "stage": "region_summary_common",
+      "seconds": 3.1295038000680506,
+      "completed": true,
+      "summary_exists": true
+    }
+  ],
+  "original_source_sha256": {
+    "region_classification/experiment_common.py": "40312abb895b0976d2a51318cb9f07813e528e7c1b3beae1d6daf30076e627b8",
+    "region_classification/gpu_monitor.py": "0bfe8678caa66723b3da49d784474418fc352317016960dbd81e674fa5740d6c",
+    "region_classification/requirements_260819.txt": "e4694402156e3bc86d8b366d72bd91e1f8ed2e697656e7c02171c3c6bc0ac3ed",
+    "region_classification/run_full_experiment.py": "16d4ed72493058426aa9c30997de831f57acb927e00a70d66dac8db2549bc696",
+    "region_classification/step1_prepare_data_80_10_10.py": "0b448762e31e156564ff2cd79ec54534082af6c411d29d9c34f93a51d6484f52",
+    "region_classification/step2_train_dialect_tokenizer.py": "b511110be1793776fc3a710e2b6a37b56b1115e258e52a0051c8cde6570a7bf5",
+    "region_classification/step3_pretrain_small_bert_mlm.py": "07272de629a9aabdfeb154177777017af54149f1cdcbd3ae594516718848d065",
+    "region_classification/step4_finetune_region_classifier.py": "10f03cadbd8a3f34a2378624c105f32b71809b0882d24a5b747fff9c2837b5fe",
+    "region_classification/step5_summarize_results.py": "748ad068d32dcef2d78ec8a37edf86a97cacb50ef3860ebb33e0f7bd6e582342",
+    "region_classification/step6_changed_subset_analysis.py": "5fe6988c8fdab26f228b4c94e14ba95ff8ed97a5d3ead71e96d700595f3f1216",
+    "translation/experiment_common.py": "184d67baa77bbbca12170e758cd2c15f9663dcfa7db563bccdbc29884772aa2e",
+    "translation/process_gpu_monitor.py": "7632b555ea6b69f17b0a4e84742d5f132f2400db9b914d8d6b6d9d7f346891a7",
+    "translation/requirements_260811.txt": "5b8846b658bc017657a5d5896bbbe14444f1f12f5f28bc1ada51067792a29455",
+    "translation/run_full_experiment.py": "a1cdb97152b61c8a604366d9e98549c9d54e3ae35fc26ab9d8aca0196c789cb2",
+    "translation/step1_prepare_parallel_data.py": "1f86e88c62dc4f71f8fcd9405bc29626a9cbe58074e9d1f533684608b911c20c",
+    "translation/step2_pretrain_standard_decoder_clm.py": "2d39ed6dbd1033f38241d2f4da376dff99d769732e9cff6d04a75d74a23a7803",
+    "translation/step3_train_dialect_to_standard.py": "5feddaba5df878dd654e16896eb9d1a9aa1474b0ed310d2e71b295f7ed8c4c67",
+    "translation/step4_summarize_results.py": "2b61f0adbb9f7d41a768ccf922157aa06d1a56aead4624726fdef83439cdd31b"
+  },
+  "started_utc": "2026-10-12T12:29:24.108298+00:00",
+  "dataset_cache": "C:\\Users\\ohdon\\AppData\\Local\\Temp\\kdsm_7ust1tfv",
+  "finished_utc": "2026-10-12T12:32:11.921568+00:00",
+  "original_shapes_verified": true,
+  "shared_backbone_initialization_verified": true,
+  "cuda_validated": false,
+  "external_gpu_monitor_validated": false,
+  "production_32000_tokenizer_trained": false
+}

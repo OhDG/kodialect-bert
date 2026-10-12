@@ -1,0 +1,74 @@
+{
+  "region_classification/experiment_common.py": {
+    "sha256": "40312abb895b0976d2a51318cb9f07813e528e7c1b3beae1d6daf30076e627b8",
+    "source": "D:\\documents\\project_1\\git\\kodialect-bert\\260819_4tokenizer_5seed_region_classification\\experiment_common.py"
+  },
+  "region_classification/gpu_monitor.py": {
+    "sha256": "0bfe8678caa66723b3da49d784474418fc352317016960dbd81e674fa5740d6c",
+    "source": "D:\\documents\\project_1\\git\\kodialect-bert\\260819_4tokenizer_5seed_region_classification\\gpu_monitor.py"
+  },
+  "region_classification/requirements_260819.txt": {
+    "sha256": "e4694402156e3bc86d8b366d72bd91e1f8ed2e697656e7c02171c3c6bc0ac3ed",
+    "source": "D:\\documents\\project_1\\git\\kodialect-bert\\260819_4tokenizer_5seed_region_classification\\requirements_260819.txt"
+  },
+  "region_classification/run_full_experiment.py": {
+    "sha256": "16d4ed72493058426aa9c30997de831f57acb927e00a70d66dac8db2549bc696",
+    "source": "D:\\documents\\project_1\\git\\kodialect-bert\\260819_4tokenizer_5seed_region_classification\\run_full_experiment.py"
+  },
+  "region_classification/step1_prepare_data_80_10_10.py": {
+    "sha256": "0b448762e31e156564ff2cd79ec54534082af6c411d29d9c34f93a51d6484f52",
+    "source": "D:\\documents\\project_1\\git\\kodialect-bert\\260819_4tokenizer_5seed_region_classification\\step1_prepare_data_80_10_10.py"
+  },
+  "region_classification/step2_train_dialect_tokenizer.py": {
+    "sha256": "b511110be1793776fc3a710e2b6a37b56b1115e258e52a0051c8cde6570a7bf5",
+    "source": "D:\\documents\\project_1\\git\\kodialect-bert\\260819_4tokenizer_5seed_region_classification\\step2_train_dialect_tokenizer.py"
+  },
+  "region_classification/step3_pretrain_small_bert_mlm.py": {
+    "sha256": "07272de629a9aabdfeb154177777017af54149f1cdcbd3ae594516718848d065",
+    "source": "D:\\documents\\project_1\\git\\kodialect-bert\\260819_4tokenizer_5seed_region_classification\\step3_pretrain_small_bert_mlm.py"
+  },
+  "region_classification/step4_finetune_region_classifier.py": {
+    "sha256": "10f03cadbd8a3f34a2378624c105f32b71809b0882d24a5b747fff9c2837b5fe",
+    "source": "D:\\documents\\project_1\\git\\kodialect-bert\\260819_4tokenizer_5seed_region_classification\\step4_finetune_region_classifier.py"
+  },
+  "region_classification/step5_summarize_results.py": {
+    "sha256": "748ad068d32dcef2d78ec8a37edf86a97cacb50ef3860ebb33e0f7bd6e582342",
+    "source": "D:\\documents\\project_1\\git\\kodialect-bert\\260819_4tokenizer_5seed_region_classification\\step5_summarize_results.py"
+  },
+  "region_classification/step6_changed_subset_analysis.py": {
+    "sha256": "5fe6988c8fdab26f228b4c94e14ba95ff8ed97a5d3ead71e96d700595f3f1216",
+    "source": "D:\\documents\\project_1\\git\\kodialect-bert\\260819_4tokenizer_5seed_region_classification\\step6_changed_subset_analysis.py"
+  },
+  "translation/experiment_common.py": {
+    "sha256": "184d67baa77bbbca12170e758cd2c15f9663dcfa7db563bccdbc29884772aa2e",
+    "source": "D:\\documents\\project_1\\git\\kodialect-bert\\260811_dialect_to_standard_4tokenizer_seq2seq\\experiment_common.py"
+  },
+  "translation/process_gpu_monitor.py": {
+    "sha256": "7632b555ea6b69f17b0a4e84742d5f132f2400db9b914d8d6b6d9d7f346891a7",
+    "source": "D:\\documents\\project_1\\git\\kodialect-bert\\260811_dialect_to_standard_4tokenizer_seq2seq\\process_gpu_monitor.py"
+  },
+  "translation/requirements_260811.txt": {
+    "sha256": "5b8846b658bc017657a5d5896bbbe14444f1f12f5f28bc1ada51067792a29455",
+    "source": "D:\\documents\\project_1\\git\\kodialect-bert\\260811_dialect_to_standard_4tokenizer_seq2seq\\requirements_260811.txt"
+  },
+  "translation/run_full_experiment.py": {
+    "sha256": "a1cdb97152b61c8a604366d9e98549c9d54e3ae35fc26ab9d8aca0196c789cb2",
+    "source": "D:\\documents\\project_1\\git\\kodialect-bert\\260811_dialect_to_standard_4tokenizer_seq2seq\\run_full_experiment.py"
+  },
+  "translation/step1_prepare_parallel_data.py": {
+    "sha256": "1f86e88c62dc4f71f8fcd9405bc29626a9cbe58074e9d1f533684608b911c20c",
+    "source": "D:\\documents\\project_1\\git\\kodialect-bert\\260811_dialect_to_standard_4tokenizer_seq2seq\\step1_prepare_parallel_data.py"
+  },
+  "translation/step2_pretrain_standard_decoder_clm.py": {
+    "sha256": "2d39ed6dbd1033f38241d2f4da376dff99d769732e9cff6d04a75d74a23a7803",
+    "source": "D:\\documents\\project_1\\git\\kodialect-bert\\260811_dialect_to_standard_4tokenizer_seq2seq\\step2_pretrain_standard_decoder_clm.py"
+  },
+  "translation/step3_train_dialect_to_standard.py": {
+    "sha256": "5feddaba5df878dd654e16896eb9d1a9aa1474b0ed310d2e71b295f7ed8c4c67",
+    "source": "D:\\documents\\project_1\\git\\kodialect-bert\\260811_dialect_to_standard_4tokenizer_seq2seq\\step3_train_dialect_to_standard.py"
+  },
+  "translation/step4_summarize_results.py": {
+    "sha256": "2b61f0adbb9f7d41a768ccf922157aa06d1a56aead4624726fdef83439cdd31b",
+    "source": "D:\\documents\\project_1\\git\\kodialect-bert\\260811_dialect_to_standard_4tokenizer_seq2seq\\step4_summarize_results.py"
+  }
+}

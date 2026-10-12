@@ -1,0 +1,16 @@
+# dialect_translate: preserve its supplied SacreBLEU/RapidFuzz versions.
+# torch==2.0.1+cu117, torchvision, torchaudio are intentionally managed separately.
+transformers==4.40.1
+datasets==2.19.1
+tokenizers==0.19.1
+numpy==1.26.4
+pyarrow==15.0.2
+accelerate==1.14.0
+scikit-learn==1.4.2
+huggingface-hub==0.35.1
+sentencepiece==0.2.0
+sacrebleu==2.6.0
+rapidfuzz==3.14.5
+psutil==7.2.2
+nvidia-ml-py==13.610.43
+tqdm>=4.62.0

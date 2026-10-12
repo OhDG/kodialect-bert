@@ -1,0 +1,4 @@
+# Byte hashes must remain valid after Git checkout on Linux.
+server/** -text
+local_prepare/common_preprocessing.py -text
+local_prepare/PREPROCESSING_POLICY.txt -text

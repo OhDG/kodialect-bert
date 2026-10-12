@@ -1,0 +1,548 @@
+{
+  "scope": "Exact cross-file sentence-set overlap, old Jeolla JSON vs new Jeolla Validation JSON; no source mutations.",
+  "old_root": "D:\\documents\\project_1\\git\\project1_dataset\\JSON만_모은폴더_전라도",
+  "new_root": "D:\\방언 데이터 총정리\\015.한국어 방언 발화 데이터(전라도)\\01.데이터\\2.Validation",
+  "old_files": 7412,
+  "new_files": 994,
+  "common_file_ids": [],
+  "old_raw_utterance_rows": 1992101,
+  "new_raw_utterance_rows": 275137,
+  "first_long_overlap": {
+    "old_file_id": "DJDG20000119",
+    "characters": 20,
+    "normalized_text_sha256": "ff2b4f49dee6e3c10273bf3aaff1feefb77cad0868b1bcb86bb9790c56e0e87f"
+  },
+  "methods": {
+    "comparison": "Exact Python string/tuple equality; sets deduplicate comparison keys but row-match counts retain every row occurrence.",
+    "raw_dialect": "Unmodified nonblank dialect_form; whitespace and punctuation significant.",
+    "normalized_dialect": "Existing translation normalize_text: NFKC and whitespace collapse.",
+    "cleaned_region_dialect": "Existing region clean_base_text; discard blank results, no additional whitespace normalization.",
+    "normalized_pair": "Both normalized dialect_form and standard_form equal as an ordered tuple.",
+    "length_bands": "Python len of the corresponding dialect key, including whitespace/punctuation; thresholds <=5, 6-19, >=20 are descriptive only.",
+    "long_file_diagnostic": ">90% of >=20-character new rows match any old row; require >=20 such new rows to avoid tiny denominators. This does not itself prove a copied recording.",
+    "clean_function_source": "D:\\documents\\project_1\\git\\kodialect-bert\\260819_4tokenizer_5seed_region_classification\\step1_prepare_data_80_10_10.py",
+    "clean_function": "def clean_base_text(text: str) -> str:\n    cleaned = re.sub(r\"\\([^)]*\\)|\\[[^\\]]*\\]\", \"\", text)\n    return re.sub(r\"[^가-힣a-zA-Z0-9.,?! ]\", \"\", cleaned).strip()",
+    "normalize_function_source": "D:\\documents\\project_1\\git\\kodialect-bert\\260811_dialect_to_standard_4tokenizer_seq2seq\\experiment_common.py",
+    "normalize_function": "def normalize_text(text: str) -> str:\n    text = unicodedata.normalize(\"NFKC\", str(text))\n    return re.sub(r\"\\s+\", \" \", text).strip()",
+    "notes": "Same text can be a generic conversational expression. No fuzzy matching, speaker matching, or automated filtering performed."
+  },
+  "by_basis": {
+    "raw_dialect": {
+      "old_valid_rows": 1992101,
+      "new_valid_rows": 275137,
+      "new_unique_keys": 268512,
+      "overlapping_unique_keys": 3856,
+      "new_matching_rows": 10113,
+      "new_matching_pct": 3.675623,
+      "old_matching_rows": 92304,
+      "new_nonmatching_rows": 265024,
+      "by_length": {
+        "chars_0_5": {
+          "new_rows": 11030,
+          "new_matching_rows": 7995,
+          "new_matching_pct": 72.484134,
+          "new_unique_keys": 5126,
+          "overlapping_unique_keys": 2313
+        },
+        "chars_6_19": {
+          "new_rows": 65136,
+          "new_matching_rows": 2086,
+          "new_matching_pct": 3.20253,
+          "new_unique_keys": 64432,
+          "overlapping_unique_keys": 1511
+        },
+        "chars_20_plus": {
+          "new_rows": 198971,
+          "new_matching_rows": 32,
+          "new_matching_pct": 0.016083,
+          "new_unique_keys": 198954,
+          "overlapping_unique_keys": 32
+        }
+      },
+      "files_over_90pct_long_rows": [],
+      "top_10_files_by_long_matching_pct": [
+        {
+          "file_id": "DJSX20000263",
+          "valid_rows": 294,
+          "matching_rows": 65,
+          "matching_pct": 22.108844,
+          "long_valid_rows": 167,
+          "long_matching_rows": 14,
+          "long_matching_pct": 8.383234
+        },
+        {
+          "file_id": "DJDG20002070",
+          "valid_rows": 267,
+          "matching_rows": 4,
+          "matching_pct": 1.498127,
+          "long_valid_rows": 181,
+          "long_matching_rows": 3,
+          "long_matching_pct": 1.657459
+        },
+        {
+          "file_id": "DJDG20000466",
+          "valid_rows": 240,
+          "matching_rows": 6,
+          "matching_pct": 2.5,
+          "long_valid_rows": 164,
+          "long_matching_rows": 2,
+          "long_matching_pct": 1.219512
+        },
+        {
+          "file_id": "DJDG20002233",
+          "valid_rows": 252,
+          "matching_rows": 3,
+          "matching_pct": 1.190476,
+          "long_valid_rows": 192,
+          "long_matching_rows": 2,
+          "long_matching_pct": 1.041667
+        },
+        {
+          "file_id": "DJSX20000383",
+          "valid_rows": 282,
+          "matching_rows": 76,
+          "matching_pct": 26.950355,
+          "long_valid_rows": 97,
+          "long_matching_rows": 1,
+          "long_matching_pct": 1.030928
+        },
+        {
+          "file_id": "DJDG20002646",
+          "valid_rows": 167,
+          "matching_rows": 2,
+          "matching_pct": 1.197605,
+          "long_valid_rows": 158,
+          "long_matching_rows": 1,
+          "long_matching_pct": 0.632911
+        },
+        {
+          "file_id": "DJDG20002057",
+          "valid_rows": 238,
+          "matching_rows": 3,
+          "matching_pct": 1.260504,
+          "long_valid_rows": 163,
+          "long_matching_rows": 1,
+          "long_matching_pct": 0.613497
+        },
+        {
+          "file_id": "DJDG20000470",
+          "valid_rows": 230,
+          "matching_rows": 1,
+          "matching_pct": 0.434783,
+          "long_valid_rows": 171,
+          "long_matching_rows": 1,
+          "long_matching_pct": 0.584795
+        },
+        {
+          "file_id": "DJDG20002223",
+          "valid_rows": 275,
+          "matching_rows": 4,
+          "matching_pct": 1.454545,
+          "long_valid_rows": 186,
+          "long_matching_rows": 1,
+          "long_matching_pct": 0.537634
+        },
+        {
+          "file_id": "DJDG20002729",
+          "valid_rows": 208,
+          "matching_rows": 1,
+          "matching_pct": 0.480769,
+          "long_valid_rows": 191,
+          "long_matching_rows": 1,
+          "long_matching_pct": 0.52356
+        }
+      ]
+    },
+    "normalized_dialect": {
+      "old_valid_rows": 1992101,
+      "new_valid_rows": 275137,
+      "new_unique_keys": 268512,
+      "overlapping_unique_keys": 3856,
+      "new_matching_rows": 10113,
+      "new_matching_pct": 3.675623,
+      "old_matching_rows": 92304,
+      "new_nonmatching_rows": 265024,
+      "by_length": {
+        "chars_0_5": {
+          "new_rows": 11030,
+          "new_matching_rows": 7995,
+          "new_matching_pct": 72.484134,
+          "new_unique_keys": 5126,
+          "overlapping_unique_keys": 2313
+        },
+        "chars_6_19": {
+          "new_rows": 65136,
+          "new_matching_rows": 2086,
+          "new_matching_pct": 3.20253,
+          "new_unique_keys": 64432,
+          "overlapping_unique_keys": 1511
+        },
+        "chars_20_plus": {
+          "new_rows": 198971,
+          "new_matching_rows": 32,
+          "new_matching_pct": 0.016083,
+          "new_unique_keys": 198954,
+          "overlapping_unique_keys": 32
+        }
+      },
+      "files_over_90pct_long_rows": [],
+      "top_10_files_by_long_matching_pct": [
+        {
+          "file_id": "DJSX20000263",
+          "valid_rows": 294,
+          "matching_rows": 65,
+          "matching_pct": 22.108844,
+          "long_valid_rows": 167,
+          "long_matching_rows": 14,
+          "long_matching_pct": 8.383234
+        },
+        {
+          "file_id": "DJDG20002070",
+          "valid_rows": 267,
+          "matching_rows": 4,
+          "matching_pct": 1.498127,
+          "long_valid_rows": 181,
+          "long_matching_rows": 3,
+          "long_matching_pct": 1.657459
+        },
+        {
+          "file_id": "DJDG20000466",
+          "valid_rows": 240,
+          "matching_rows": 6,
+          "matching_pct": 2.5,
+          "long_valid_rows": 164,
+          "long_matching_rows": 2,
+          "long_matching_pct": 1.219512
+        },
+        {
+          "file_id": "DJDG20002233",
+          "valid_rows": 252,
+          "matching_rows": 3,
+          "matching_pct": 1.190476,
+          "long_valid_rows": 192,
+          "long_matching_rows": 2,
+          "long_matching_pct": 1.041667
+        },
+        {
+          "file_id": "DJSX20000383",
+          "valid_rows": 282,
+          "matching_rows": 76,
+          "matching_pct": 26.950355,
+          "long_valid_rows": 97,
+          "long_matching_rows": 1,
+          "long_matching_pct": 1.030928
+        },
+        {
+          "file_id": "DJDG20002646",
+          "valid_rows": 167,
+          "matching_rows": 2,
+          "matching_pct": 1.197605,
+          "long_valid_rows": 158,
+          "long_matching_rows": 1,
+          "long_matching_pct": 0.632911
+        },
+        {
+          "file_id": "DJDG20002057",
+          "valid_rows": 238,
+          "matching_rows": 3,
+          "matching_pct": 1.260504,
+          "long_valid_rows": 163,
+          "long_matching_rows": 1,
+          "long_matching_pct": 0.613497
+        },
+        {
+          "file_id": "DJDG20000470",
+          "valid_rows": 230,
+          "matching_rows": 1,
+          "matching_pct": 0.434783,
+          "long_valid_rows": 171,
+          "long_matching_rows": 1,
+          "long_matching_pct": 0.584795
+        },
+        {
+          "file_id": "DJDG20002223",
+          "valid_rows": 275,
+          "matching_rows": 4,
+          "matching_pct": 1.454545,
+          "long_valid_rows": 186,
+          "long_matching_rows": 1,
+          "long_matching_pct": 0.537634
+        },
+        {
+          "file_id": "DJDG20002729",
+          "valid_rows": 208,
+          "matching_rows": 1,
+          "matching_pct": 0.480769,
+          "long_valid_rows": 191,
+          "long_matching_rows": 1,
+          "long_matching_pct": 0.52356
+        }
+      ]
+    },
+    "cleaned_region_dialect": {
+      "old_valid_rows": 1990314,
+      "new_valid_rows": 275049,
+      "new_unique_keys": 268299,
+      "overlapping_unique_keys": 3970,
+      "new_matching_rows": 10441,
+      "new_matching_pct": 3.796051,
+      "old_matching_rows": 94088,
+      "new_nonmatching_rows": 264608,
+      "by_length": {
+        "chars_0_5": {
+          "new_rows": 11485,
+          "new_matching_rows": 8324,
+          "new_matching_pct": 72.477144,
+          "new_unique_keys": 5433,
+          "overlapping_unique_keys": 2418
+        },
+        "chars_6_19": {
+          "new_rows": 67609,
+          "new_matching_rows": 2088,
+          "new_matching_pct": 3.088346,
+          "new_unique_keys": 66924,
+          "overlapping_unique_keys": 1523
+        },
+        "chars_20_plus": {
+          "new_rows": 195955,
+          "new_matching_rows": 29,
+          "new_matching_pct": 0.014799,
+          "new_unique_keys": 195942,
+          "overlapping_unique_keys": 29
+        }
+      },
+      "files_over_90pct_long_rows": [],
+      "top_10_files_by_long_matching_pct": [
+        {
+          "file_id": "DJSX20000263",
+          "valid_rows": 294,
+          "matching_rows": 67,
+          "matching_pct": 22.789116,
+          "long_valid_rows": 162,
+          "long_matching_rows": 14,
+          "long_matching_pct": 8.641975
+        },
+        {
+          "file_id": "DJDG20002070",
+          "valid_rows": 267,
+          "matching_rows": 4,
+          "matching_pct": 1.498127,
+          "long_valid_rows": 180,
+          "long_matching_rows": 3,
+          "long_matching_pct": 1.666667
+        },
+        {
+          "file_id": "DJDG20000466",
+          "valid_rows": 240,
+          "matching_rows": 6,
+          "matching_pct": 2.5,
+          "long_valid_rows": 157,
+          "long_matching_rows": 2,
+          "long_matching_pct": 1.273885
+        },
+        {
+          "file_id": "DJSX20000383",
+          "valid_rows": 280,
+          "matching_rows": 84,
+          "matching_pct": 30.0,
+          "long_valid_rows": 91,
+          "long_matching_rows": 1,
+          "long_matching_pct": 1.098901
+        },
+        {
+          "file_id": "DJDG20002233",
+          "valid_rows": 252,
+          "matching_rows": 3,
+          "matching_pct": 1.190476,
+          "long_valid_rows": 187,
+          "long_matching_rows": 2,
+          "long_matching_pct": 1.069519
+        },
+        {
+          "file_id": "DJDG20002646",
+          "valid_rows": 167,
+          "matching_rows": 2,
+          "matching_pct": 1.197605,
+          "long_valid_rows": 158,
+          "long_matching_rows": 1,
+          "long_matching_pct": 0.632911
+        },
+        {
+          "file_id": "DJDG20002057",
+          "valid_rows": 238,
+          "matching_rows": 3,
+          "matching_pct": 1.260504,
+          "long_valid_rows": 162,
+          "long_matching_rows": 1,
+          "long_matching_pct": 0.617284
+        },
+        {
+          "file_id": "DJDG20000470",
+          "valid_rows": 230,
+          "matching_rows": 1,
+          "matching_pct": 0.434783,
+          "long_valid_rows": 163,
+          "long_matching_rows": 1,
+          "long_matching_pct": 0.613497
+        },
+        {
+          "file_id": "DJDG20002406",
+          "valid_rows": 259,
+          "matching_rows": 2,
+          "matching_pct": 0.772201,
+          "long_valid_rows": 199,
+          "long_matching_rows": 1,
+          "long_matching_pct": 0.502513
+        },
+        {
+          "file_id": "DJDG20002405",
+          "valid_rows": 270,
+          "matching_rows": 1,
+          "matching_pct": 0.37037,
+          "long_valid_rows": 213,
+          "long_matching_rows": 1,
+          "long_matching_pct": 0.469484
+        }
+      ]
+    },
+    "normalized_pair": {
+      "old_valid_rows": 1992101,
+      "new_valid_rows": 275137,
+      "new_unique_keys": 268585,
+      "overlapping_unique_keys": 3817,
+      "new_matching_rows": 9983,
+      "new_matching_pct": 3.628374,
+      "old_matching_rows": 91076,
+      "new_nonmatching_rows": 265154,
+      "by_length": {
+        "chars_0_5": {
+          "new_rows": 11030,
+          "new_matching_rows": 7902,
+          "new_matching_pct": 71.640979,
+          "new_unique_keys": 5192,
+          "overlapping_unique_keys": 2301
+        },
+        "chars_6_19": {
+          "new_rows": 65136,
+          "new_matching_rows": 2049,
+          "new_matching_pct": 3.145726,
+          "new_unique_keys": 64439,
+          "overlapping_unique_keys": 1484
+        },
+        "chars_20_plus": {
+          "new_rows": 198971,
+          "new_matching_rows": 32,
+          "new_matching_pct": 0.016083,
+          "new_unique_keys": 198954,
+          "overlapping_unique_keys": 32
+        }
+      },
+      "files_over_90pct_long_rows": [],
+      "top_10_files_by_long_matching_pct": [
+        {
+          "file_id": "DJSX20000263",
+          "valid_rows": 294,
+          "matching_rows": 63,
+          "matching_pct": 21.428571,
+          "long_valid_rows": 167,
+          "long_matching_rows": 14,
+          "long_matching_pct": 8.383234
+        },
+        {
+          "file_id": "DJDG20002070",
+          "valid_rows": 267,
+          "matching_rows": 4,
+          "matching_pct": 1.498127,
+          "long_valid_rows": 181,
+          "long_matching_rows": 3,
+          "long_matching_pct": 1.657459
+        },
+        {
+          "file_id": "DJDG20000466",
+          "valid_rows": 240,
+          "matching_rows": 6,
+          "matching_pct": 2.5,
+          "long_valid_rows": 164,
+          "long_matching_rows": 2,
+          "long_matching_pct": 1.219512
+        },
+        {
+          "file_id": "DJDG20002233",
+          "valid_rows": 252,
+          "matching_rows": 3,
+          "matching_pct": 1.190476,
+          "long_valid_rows": 192,
+          "long_matching_rows": 2,
+          "long_matching_pct": 1.041667
+        },
+        {
+          "file_id": "DJSX20000383",
+          "valid_rows": 282,
+          "matching_rows": 76,
+          "matching_pct": 26.950355,
+          "long_valid_rows": 97,
+          "long_matching_rows": 1,
+          "long_matching_pct": 1.030928
+        },
+        {
+          "file_id": "DJDG20002646",
+          "valid_rows": 167,
+          "matching_rows": 2,
+          "matching_pct": 1.197605,
+          "long_valid_rows": 158,
+          "long_matching_rows": 1,
+          "long_matching_pct": 0.632911
+        },
+        {
+          "file_id": "DJDG20002057",
+          "valid_rows": 238,
+          "matching_rows": 3,
+          "matching_pct": 1.260504,
+          "long_valid_rows": 163,
+          "long_matching_rows": 1,
+          "long_matching_pct": 0.613497
+        },
+        {
+          "file_id": "DJDG20000470",
+          "valid_rows": 230,
+          "matching_rows": 1,
+          "matching_pct": 0.434783,
+          "long_valid_rows": 171,
+          "long_matching_rows": 1,
+          "long_matching_pct": 0.584795
+        },
+        {
+          "file_id": "DJDG20002223",
+          "valid_rows": 275,
+          "matching_rows": 4,
+          "matching_pct": 1.454545,
+          "long_valid_rows": 186,
+          "long_matching_rows": 1,
+          "long_matching_pct": 0.537634
+        },
+        {
+          "file_id": "DJDG20002729",
+          "valid_rows": 208,
+          "matching_rows": 1,
+          "matching_pct": 0.480769,
+          "long_valid_rows": 191,
+          "long_matching_rows": 1,
+          "long_matching_pct": 0.52356
+        }
+      ]
+    }
+  },
+  "elapsed_seconds": 60.41,
+  "safe_common_phrase_examples": [
+    "네",
+    "예",
+    "응",
+    "어",
+    "그렇지",
+    "맞아",
+    "아니",
+    "그래",
+    "네.",
+    "예."
+  ]
+}
