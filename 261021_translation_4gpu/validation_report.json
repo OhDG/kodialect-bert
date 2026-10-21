@@ -1,0 +1,58 @@
+{
+  "checked_at": "2026-10-21T07:48:36.032769+00:00",
+  "python": "3.10.11 (tags/v3.10.11:7d4cc5a, Apr  5 2023, 00:38:17) [MSC v.1929 64 bit (AMD64)]",
+  "unit_and_orchestration_tests": {
+    "run": 54,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "original_engine_training_defaults_unchanged": {
+    "step2_pretrain_standard_decoder_clm.py:parse_args": true,
+    "step2_pretrain_standard_decoder_clm.py:build_training_arguments": true,
+    "step3_train_dialect_to_standard.py:parse_args": true,
+    "step3_train_dialect_to_standard.py:build_training_arguments": true
+  },
+  "cpu_training_smoke": {
+    "status": "cpu_only_passed",
+    "versions": {
+      "torch": "2.0.1+cpu",
+      "transformers": "4.40.1",
+      "datasets": "2.19.1",
+      "tokenizers": "0.19.1",
+      "numpy": "1.26.4",
+      "pyarrow": "15.0.2",
+      "accelerate": "0.30.1",
+      "sentencepiece": "0.2.0",
+      "sacrebleu": "2.6.0",
+      "rapidfuzz": "3.14.5"
+    },
+    "variants": [
+      "dialect",
+      "klue",
+      "kobert",
+      "mbert"
+    ],
+    "actual_input_tokenizers": false,
+    "production_batch_size_tested": false
+  },
+  "data_archive": {
+    "file": "artifacts/translation_data.tar.gz",
+    "bytes": 702620430,
+    "sha256": "36d953944b73674b3866f294d1dd13f5269ec7f9613987df578fca0ef4bccc72",
+    "verified": true,
+    "pair_counts": {
+      "train": 8885437,
+      "validation": 1111531,
+      "test": 1111735
+    }
+  },
+  "not_locally_verified": [
+    "Linux environment installation",
+    "actual imported MLM weights/tokenizers (old server only)",
+    "four RTX4090 GPUs and full-batch VRAM probes",
+    "full dataset training time"
+  ],
+  "source": "261012_common_preprocessing_reexperiment/server/translation",
+  "profile_changes": "Independent GPU lanes; microbatch64 x accumulation4 (effective256), reduced evaluation batches and CPU workers; pinned Accelerate0.30.1"
+}

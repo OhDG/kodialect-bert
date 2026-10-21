@@ -1,0 +1,14 @@
+/data/
+/models/
+/provenance/
+/runs/
+/smoke/
+/artifacts/
+/.env/
+/.venv/
+/.miniforge/
+/environment.freeze.txt
+/environment.json
+/launcher*.log
+__pycache__/
+*.pyc

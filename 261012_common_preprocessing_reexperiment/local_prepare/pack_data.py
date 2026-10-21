@@ -45,7 +45,8 @@ def main():
         for block in iter(lambda: stream.read(8 * 1024 * 1024), b''):
             digest.update(block)
     checksum = archive.with_name(archive.name + '.sha256')
-    checksum.write_text(digest.hexdigest() + '  ' + archive.name + '\n', encoding='ascii')
+    # GNU sha256sum treats a CR from Windows CRLF as part of the filename.
+    checksum.write_bytes((digest.hexdigest() + '  ' + archive.name + '\n').encode('ascii'))
     print(f'[OK] {archive}: {archive.stat().st_size:,} bytes; {len(selected)} files', flush=True)
 
 

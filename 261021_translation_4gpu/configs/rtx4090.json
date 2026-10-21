@@ -1,0 +1,31 @@
+{
+  "description": "Independent translation runs on 24 GiB GPUs; effective batch 256 retained",
+  "cpu_threads": 4,
+  "dataloader_num_workers": 2,
+  "dataloader_prefetch_factor": 2,
+  "preprocessing_num_workers": 4,
+  "monitor_interval": 5,
+  "decoder": {
+    "train_batch_size": 64,
+    "gradient_accumulation_steps": 4,
+    "eval_batch_size": 128,
+    "num_train_epochs": 3.0,
+    "learning_rate": 0.00005,
+    "max_length": 128,
+    "seed": 42
+  },
+  "translation": {
+    "train_batch_size": 64,
+    "gradient_accumulation_steps": 4,
+    "eval_batch_size": 32,
+    "eval_accumulation_steps": 8,
+    "num_train_epochs": 3.0,
+    "learning_rate": 0.00003,
+    "max_source_length": 128,
+    "max_target_length": 128,
+    "generation_max_length": 128,
+    "generation_num_beams": 4,
+    "validation_selection_seed": 42,
+    "validation_generation_samples": 50000
+  }
+}
