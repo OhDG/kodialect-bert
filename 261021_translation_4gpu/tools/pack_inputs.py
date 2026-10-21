@@ -2,8 +2,10 @@
 """Export only prepared translation inputs and four final MLM encoders.
 
 Run --data-only locally and --models-only on the old A6000 server when the
-inputs live on different machines. The default exports both. No training,
-preprocessing, downloads, results, checkpoints, or external raw JSON are used.
+inputs live on different machines. Default exports both. --output-dir creates
+a plain directory for NFS transfer. --resolve-tokenizer-code bundles the old
+server's cached custom code using a verified temporary tokenizer export.
+No training, preprocessing, downloads, results or raw JSON are used.
 """
 from __future__ import annotations
 
@@ -17,6 +19,8 @@ import os
 from pathlib import Path
 import sys
 import tarfile
+import tempfile
+from contextlib import nullcontext
 
 from verify_inputs import (DATA_FILES, DATA_PROVENANCE, InputError, MANIFESTS,
                            TOKENIZERS, capture_metadata, regular_file,
@@ -101,12 +105,21 @@ def add_bytes(tar, name, data):
     return {"size_bytes": len(data), "sha256": hashlib.sha256(data).hexdigest()}
 
 
-def pack_inputs(source_root, output, scope="full", compresslevel=1):
+def pack_inputs(source_root, output, scope="full", compresslevel=1, resolve_tokenizer_code=False):
+    with tempfile.TemporaryDirectory(prefix="tokenizer-export-") if resolve_tokenizer_code else nullcontext(None) as staging:
+        files = collect_inputs(source_root, scope)
+        portability = {}
+        if resolve_tokenizer_code and scope in ("models", "full"):
+            from tokenizer_export import portable_tokenizers
+            files, portability = portable_tokenizers(files, staging)
+        return write_archive(source_root, output, scope, compresslevel, files, portability)
+
+
+def write_archive(source_root, output, scope, compresslevel, files, portability):
     output = Path(output).absolute()
     require(not output.exists() and not output.is_symlink(), f"Refusing to overwrite existing output: {output}")
     checksum_path = Path(str(output) + ".sha256")
     require(not checksum_path.exists(), f"Refusing to overwrite existing checksum: {checksum_path}")
-    files = collect_inputs(source_root, scope)
     # Validate small artifacts and model layouts before reading/compressing multi-GB data.
     initial_records = {name: {"size_bytes": path.stat().st_size, "sha256": "0" * 64} for name, path in files.items()}
     metadata = {name: path.read_bytes() for name, path in files.items() if capture_metadata(name)}
@@ -142,6 +155,7 @@ def pack_inputs(source_root, output, scope="full", compresslevel=1):
                             "created_utc": datetime.now(timezone.utc).isoformat(),
                             "source_server_root": str(Path(source_root).absolute()),
                             "purpose": "fresh decoder CLM and 20 translations; reuse four existing MLM encoders",
+                            "tokenizer_portability": portability,
                             "files": records.copy()}
                 data = json_bytes(manifest)
                 records[manifest_name] = add_bytes(tar, manifest_name, data)
@@ -165,19 +179,80 @@ def pack_inputs(source_root, output, scope="full", compresslevel=1):
         raise
 
 
+def export_directory(source_root, output, scope="full", resolve_tokenizer_code=False):
+    """Plain verified portable tree for NFS; publish only after every hash passes."""
+    output = Path(output).absolute()
+    require(not output.exists() and not output.is_symlink(), f"Refusing to overwrite existing output: {output}")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix=".shared-inputs-", dir=output.parent) as temporary:
+        temporary = Path(temporary)
+        prepared = temporary / "prepared"
+        prepared.mkdir()
+        files = collect_inputs(source_root, scope)
+        portability = {}
+        if resolve_tokenizer_code and scope in ("models", "full"):
+            from tokenizer_export import portable_tokenizers
+            files, portability = portable_tokenizers(files, temporary / "tokenizers")
+        records, metadata = {}, {}
+        from verify_inputs import hash_stream, verify_root
+        for name, path in sorted(files.items()):
+            before = path.stat()
+            destination = prepared / name
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            print(f"[EXPORT] {name} ({before.st_size:,} bytes)", flush=True)
+            with path.open("rb") as source, destination.open("xb") as target:
+                records[name], data = hash_stream(source, target, capture_metadata(name))
+            after = path.stat()
+            require((before.st_size, before.st_mtime_ns) == (after.st_size, after.st_mtime_ns),
+                    f"Input changed during export: {path}")
+            if capture_metadata(name):
+                metadata[name] = data
+        manifest_name = MANIFESTS[scope]
+        manifest = {"format_version": 1, "scope": scope,
+                    "created_utc": datetime.now(timezone.utc).isoformat(),
+                    "source_server_root": str(Path(source_root).absolute()),
+                    "purpose": "NFS transfer; fresh decoder and translations; reuse existing MLM encoders",
+                    "tokenizer_portability": portability, "files": records}
+        path = prepared / manifest_name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        data = json_bytes(manifest)
+        path.write_bytes(data)
+        Path(str(path) + ".sha256").write_bytes(
+            f"{hashlib.sha256(data).hexdigest()}  {path.name}\n".encode("ascii"))
+        report = verify_root(prepared, ("data", "models") if scope == "full" else (scope,))
+        # Reserve the final path without replacing even an empty existing directory.
+        output.mkdir()
+        try:
+            for directory in prepared.iterdir():
+                directory.rename(output / directory.name)
+        except BaseException:
+            # Do not delete partially published inputs; the verifier will reject them.
+            raise InputError(f"Directory export interrupted; inspect preserved partial output: {output}")
+        report.update(output_directory=str(output), tokenizer_portability=portability)
+        return report
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source-server-root", required=True, type=Path)
-    parser.add_argument("--output", required=True, type=Path)
+    output = parser.add_mutually_exclusive_group(required=True)
+    output.add_argument("--output", type=Path, help="Write a .tar.gz archive")
+    output.add_argument("--output-dir", type=Path, help="Write a plain portable directory for NFS transfer")
     scope = parser.add_mutually_exclusive_group()
     scope.add_argument("--data-only", action="store_true")
     scope.add_argument("--models-only", action="store_true")
     parser.add_argument("--compresslevel", type=int, choices=range(0, 10), default=1,
                         help="gzip level (default 1: fast transfer preparation)")
+    parser.add_argument("--resolve-tokenizer-code", action="store_true",
+                        help="Bundle custom tokenizer code from the old environment's cache; no downloads or source edits")
     args = parser.parse_args(argv)
     try:
-        report = pack_inputs(args.source_server_root, args.output,
-                             "data" if args.data_only else "models" if args.models_only else "full", args.compresslevel)
+        scope = "data" if args.data_only else "models" if args.models_only else "full"
+        if args.output_dir:
+            report = export_directory(args.source_server_root, args.output_dir, scope, args.resolve_tokenizer_code)
+        else:
+            report = pack_inputs(args.source_server_root, args.output, scope, args.compresslevel,
+                                 args.resolve_tokenizer_code)
         print(json.dumps(report, ensure_ascii=False, indent=2))
         return 0
     except (InputError, OSError, tarfile.TarError, EOFError) as exc:

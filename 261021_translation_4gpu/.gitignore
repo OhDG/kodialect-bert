@@ -4,6 +4,8 @@
 /runs/
 /smoke/
 /artifacts/
+/shared_inputs/
+/.shared-inputs-*/
 /.env/
 /.venv/
 /.miniforge/

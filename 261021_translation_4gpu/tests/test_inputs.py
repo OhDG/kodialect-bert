@@ -122,6 +122,9 @@ class InputTests(unittest.TestCase):
         with self.assertRaisesRegex(InputError, "requires local code"):
             self.pack("models")
         (model / "tokenization_kobert.py").write_text("# saved source code\n")
+        with self.assertRaisesRegex(InputError, "references a remote repository"):
+            self.pack("models")
+        write_json(model / "tokenizer_config.json", {"auto_map": {"AutoTokenizer": ["tokenization_kobert.KoBertTokenizer", None]}})
         self.pack("models")
 
     def test_missing_shard(self):

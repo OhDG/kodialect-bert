@@ -1,8 +1,8 @@
 {
-  "checked_at": "2026-10-21T07:48:36.032769+00:00",
+  "checked_at": "2026-10-21T08:20:46.002710+00:00",
   "python": "3.10.11 (tags/v3.10.11:7d4cc5a, Apr  5 2023, 00:38:17) [MSC v.1929 64 bit (AMD64)]",
   "unit_and_orchestration_tests": {
-    "run": 54,
+    "run": 81,
     "failures": 0,
     "errors": 0,
     "skipped": 0
@@ -54,5 +54,20 @@
     "full dataset training time"
   ],
   "source": "261012_common_preprocessing_reexperiment/server/translation",
-  "profile_changes": "Independent GPU lanes; microbatch64 x accumulation4 (effective256), reduced evaluation batches and CPU workers; pinned Accelerate0.30.1"
+  "profile_changes": "Independent GPU lanes; microbatch64 x accumulation4 (effective256), reduced evaluation batches and CPU workers; pinned Accelerate0.30.1",
+  "kobert_portable_export": {
+    "completed": true,
+    "python": "3.10.11",
+    "transformers": "4.40.1",
+    "network_downloads": false,
+    "source_files_unchanged": true,
+    "dummy_weight_bytes_unchanged": true,
+    "isolated_empty_cache_reload": true,
+    "vocabulary_and_probe_ids_identical": true
+  },
+  "nfs_transfer": {
+    "portable_directory_export_and_import": "fixture tests passed",
+    "code_only_local_workspace": "8 fixture tests passed",
+    "actual_nfs_mount_and_linux_publication": "not executed locally"
+  }
 }

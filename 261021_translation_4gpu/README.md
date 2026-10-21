@@ -1,5 +1,7 @@
 # RTX 4090 4장 번역 실험
 
+**NFS로 옮길 때는 [NFS_GUIDE.md](NFS_GUIDE.md)의 순서를 따른다.** 기존 서버에서 전처리 데이터·MLM 인코더·KoBERT 구현 코드를 검증된 공유 디렉터리로 준비하고, 새 서버의 로컬 작업 폴더로 가져온다. 아래 압축파일 방식은 별도 전송이 필요한 경우에 사용할 수 있다.
+
 기존 A6000 서버에서 학습한 **MLM 인코더 4개를 그대로 가져와**, 새 서버에서 표준어 CLM 디코더 1개와 번역 모델 **4토크나이저 × 5시드 = 20회**를 새로 학습한다. 지역 분류와 MLM 학습은 실행하지 않는다. 데이터는 기존 공통 전처리와 파일 단위 분할을 유지한다.
 
 디코더를 GPU 0에서 먼저 학습한 다음 아래 작업을 동시에 실행한다. 각 GPU는 맡은 토크나이저의 시드 `13, 21, 42, 87, 100`을 순서대로 처리한다. DDP를 쓰지 않는 독립 프로세스 4개다.
@@ -42,10 +44,13 @@ cd /data/ohdg/kodialect-bert/261021_translation_4gpu
 /data/ohdg/anaconda3/envs/dialect_translate/bin/python tools/pack_inputs.py \
   --models-only \
   --source-server-root /data/ohdg/kodialect-bert/261012_common_preprocessing_reexperiment/server \
-  --output /data/ohdg/translation_mlm_models.tar.gz
+  --output /data/ohdg/translation_mlm_models.tar.gz \
+  --resolve-tokenizer-code
 ```
 
 로컬 데이터 압축파일과 서버에서 만든 모델 압축파일, 각각의 체크섬 파일을 모두 새 서버의 `/data/ohdg/`로 옮긴다. 완성된 `translation_data.tar.gz`는 702,620,430바이트(약 703 MB)다. 4개 `final_model` 폴더의 가중치, 설정, 토크나이저 파일을 함께 묶으므로 일부 파일만 골라 복사하지 않는다. 기존 번역 결과, 디코더, 체크포인트와 토큰 캐시는 가져오지 않는다.
+
+`--resolve-tokenizer-code`는 기존 서버의 캐시에서 KoBERT 구현을 불러와 내보내기용 임시 폴더에 저장한다. 외부 다운로드나 재학습 없이 구현 파일과 로컬 참조를 포함하고 어휘·특수 토큰·예문 토큰 번호가 동일한지 확인한다. 기존 `final_model`은 수정하지 않는다. 캐시가 없다면 임의의 최신 구현으로 바꾸지 않고 오류를 출력한다.
 
 ## 2. 새 서버 환경 설치
 

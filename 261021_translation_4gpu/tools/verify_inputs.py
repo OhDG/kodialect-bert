@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Verify/import portable translation inputs with Python's standard library.
 
-Archives contain component-specific manifests, so local data and server models
-can be imported independently. Checksums establish transfer integrity, not the
+Archives and exported directories contain component-specific manifests, so local
+data and server models can be imported independently, including over NFS.
+Checksums establish transfer integrity, not the
 identity of an untrusted sender. No raw corpus JSON or network access is used.
 """
 from __future__ import annotations
@@ -142,6 +143,8 @@ def validate_model_files(files, metadata):
                 safe_name(module)
                 require(module in local and local[module]["size_bytes"] > 0,
                         f"Saved tokenizer requires local code {prefix}{module}; export it with final_model for offline loading")
+                require("--" not in entry,
+                        f"Tokenizer auto_map still references a remote repository: {entry!r}; export it with local module references for offline loading")
 
 
 def validate_data_files(files, metadata):
@@ -273,16 +276,20 @@ def inspect_archive(archive, staging=None, wanted=None):
     return validate_records(records, metadata, wanted), records
 
 
-def verify_root(root, wanted=("data", "models")):
+def directory_files(root):
+    """Inventory only portable namespaces, rejecting links and name collisions."""
     root = Path(root).absolute()
     require(root.is_dir(), f"Input root does not exist: {root}")
-    records, metadata = {}, {}
+    require(not root.is_symlink() and not (hasattr(root, "is_junction") and root.is_junction()),
+            f"Linked input root: {root}")
+    files, folded = {}, set()
     # Only portable input namespaces are scanned; code, fresh results, and caches are independent.
     for folder in ("data", "models", "provenance"):
         base = root / folder
-        if not base.exists():
+        if not base.exists() and not base.is_symlink():
             continue
         require(not base.is_symlink() and not (hasattr(base, "is_junction") and base.is_junction()), f"Linked input directory: {base}")
+        require(base.is_dir(), f"Input namespace is not a directory: {base}")
         for directory, dirs, filenames in os.walk(base, followlinks=False):
             for sub in dirs:
                 child = Path(directory) / sub
@@ -290,43 +297,107 @@ def verify_root(root, wanted=("data", "models")):
             for filename in filenames:
                 path = regular_file(Path(directory) / filename, root)
                 name = safe_name(path.relative_to(root).as_posix())
-                with path.open("rb") as stream:
-                    records[name], data = hash_stream(stream, capture=capture_metadata(name))
-                if capture_metadata(name):
-                    metadata[name] = data
-    return validate_records(records, metadata, wanted)
+                require(name.casefold() not in folded, f"Duplicate/case-colliding input path: {name}")
+                folded.add(name.casefold())
+                files[name] = path
+    return files
 
 
-def extract_archive(archive, root, wanted=None):
+def inspect_directory(root, staging=None, wanted=None, files=None):
+    """Hash (and optionally copy) an export without altering its source files."""
+    root = Path(root).absolute()
+    files = directory_files(root) if files is None else files
+    records, metadata = {}, {}
+    for name, path in files.items():
+        path = regular_file(path, root)
+        capture = capture_metadata(name)
+        with path.open("rb") as stream:
+            if staging is None:
+                record, data = hash_stream(stream, capture=capture)
+            else:
+                destination = staging.joinpath(*name.split("/"))
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                with destination.open("xb") as output:
+                    record, data = hash_stream(stream, output, capture)
+        records[name] = record
+        if capture:
+            metadata[name] = data
+    return validate_records(records, metadata, wanted), records
+
+
+def verify_root(root, wanted=("data", "models")):
+    return inspect_directory(root, wanted=wanted)[0]
+
+
+def prepare_import_root(root):
     root = Path(root).absolute()
     root.mkdir(parents=True, exist_ok=True)
     require(root.is_dir() and not root.is_symlink() and not (hasattr(root, "is_junction") and root.is_junction()), f"Unsafe import root: {root}")
+    return root
+
+
+def check_import_destinations(root, names):
+    for name in names:
+        destination = root.joinpath(*name.split("/"))
+        require(not os.path.lexists(destination), f"Refusing to overwrite existing input: {destination}")
+        for parent in destination.parents:
+            if parent == root:
+                break
+            require(not parent.is_symlink() and not (hasattr(parent, "is_junction") and parent.is_junction()), f"Linked import parent: {parent}")
+            require(not parent.exists() or parent.is_dir(), f"Import parent is not a directory: {parent}")
+
+
+def commit_staged_inputs(staging, root, records):
+    check_import_destinations(root, records)
+    committed = []
+    try:
+        # Manifests arrive last, so an interrupted import cannot appear complete.
+        ordered = sorted(records, key=lambda n: (n in MANIFESTS.values() or n.endswith("_manifest.json.sha256"), n))
+        for name in ordered:
+            source, destination = staging / name, root / name
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            # Both paths are on the destination filesystem. Link only our staged
+            # copy, never the NFS/source file; commit atomically refuses collisions.
+            os.link(source, destination)
+            committed.append(destination)
+    except BaseException:
+        for destination in reversed(committed):
+            destination.unlink()
+        raise
+
+
+def extract_archive(archive, root, wanted=None):
+    root = prepare_import_root(root)
     # Stage, verify everything, then move; never let tarfile extract paths directly.
     with tempfile.TemporaryDirectory(prefix=".input-import-", dir=root) as temporary:
         staging = Path(temporary)
         report, records = inspect_archive(archive, staging, wanted)
-        for name in records:
-            destination = root.joinpath(*name.split("/"))
-            require(not destination.exists() and not destination.is_symlink(), f"Refusing to overwrite existing input: {destination}")
-            for parent in destination.parents:
-                if parent == root:
-                    break
-                require(not parent.is_symlink() and not (hasattr(parent, "is_junction") and parent.is_junction()), f"Linked import parent: {parent}")
-                require(not parent.exists() or parent.is_dir(), f"Import parent is not a directory: {parent}")
-        committed = []
-        try:
-            # Manifests arrive last, so an interrupted import cannot appear complete.
-            ordered = sorted(records, key=lambda n: (n in MANIFESTS.values() or n.endswith("_manifest.json.sha256"), n))
-            for name in ordered:
-                source, destination = staging / name, root / name
-                destination.parent.mkdir(parents=True, exist_ok=True)
-                # Hard-link commit is atomic and refuses collisions on Windows and Linux.
-                os.link(source, destination)
-                committed.append(destination)
-        except BaseException:
-            for destination in reversed(committed):
-                destination.unlink()
-            raise
+        commit_staged_inputs(staging, root, records)
+    return report
+
+
+def import_directory(source, root, wanted=None):
+    """Copy a prepared portable export from NFS/local storage into a bundle.
+
+    Scope flags require the named component, matching archive imports; every
+    declared component in the source export is imported. Use separate exports
+    for data and models when they are to be installed independently.
+    """
+    source, root = Path(source).absolute(), Path(root).absolute()
+    require(source.is_dir(), f"Input root does not exist: {source}")
+    source_real, root_real = source.resolve(), root.resolve()
+    require(not source_real.is_relative_to(root_real) and not root_real.is_relative_to(source_real),
+            "Source and destination must be separate, non-nested directories")
+    files = directory_files(source)
+    root = prepare_import_root(root)
+    # Detect existing files before copying potentially several gigabytes over NFS.
+    check_import_destinations(root, files)
+    with tempfile.TemporaryDirectory(prefix=".input-import-", dir=root) as temporary:
+        staging = Path(temporary)
+        report, records = inspect_directory(source, staging, wanted, files)
+        # Also fail if the source inventory changed during the copy.
+        require(set(directory_files(source)) == set(files), "Source input inventory changed during import")
+        commit_staged_inputs(staging, root, records)
     return report
 
 
@@ -335,6 +406,8 @@ def main(argv=None):
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--archive", type=Path, help="Verify an archive without extracting")
     mode.add_argument("--extract", type=Path, help="Verify and import an archive; refuses existing files")
+    mode.add_argument("--import-directory", type=Path,
+                      help="Verify and copy a portable export from NFS/local storage; source stays unchanged")
     parser.add_argument("--root", type=Path, help="Bundle root to verify/import; required without --archive")
     scope = parser.add_mutually_exclusive_group()
     scope.add_argument("--data-only", action="store_true")
@@ -347,6 +420,9 @@ def main(argv=None):
         elif args.extract:
             require(args.root is not None, "--extract requires --root")
             report = extract_archive(args.extract, args.root, wanted)
+        elif args.import_directory:
+            require(args.root is not None, "--import-directory requires --root")
+            report = import_directory(args.import_directory, args.root, wanted)
         else:
             require(args.root is not None, "Supply --archive, or --root to verify installed inputs")
             report = verify_root(args.root, wanted or ("data", "models"))
