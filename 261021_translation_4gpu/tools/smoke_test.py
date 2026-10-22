@@ -210,7 +210,7 @@ def production_memory_probe(model, source, target, seq2seq=False):
 
 def train_resume(model, dataset, collator_factory, tokenizer, output, cpu, seq2seq=False):
     import torch
-    from transformers import Trainer, Seq2SeqTrainer
+    from trainer_compat import ResumeSafeTrainer as Trainer, ResumeSafeSeq2SeqTrainer as Seq2SeqTrainer
     from experiment_common import enable_trusted_local_resume
     cls = Seq2SeqTrainer if seq2seq else Trainer
     trainer = cls(model=model, args=training_args(output, cpu, seq2seq), train_dataset=dataset,
@@ -220,7 +220,10 @@ def train_resume(model, dataset, collator_factory, tokenizer, output, cpu, seq2s
     if not cpu:
         assert next(model.parameters()).device.type == "cuda"
     checkpoint = output / "checkpoint-2"
-    for required in ("trainer_state.json", "optimizer.pt", "scheduler.pt"):
+    required_files = ["trainer_state.json", "optimizer.pt", "scheduler.pt"]
+    if not cpu:
+        required_files.append("scaler.pt")
+    for required in required_files:
         assert (checkpoint / required).is_file(), f"Missing resume state: {required}"
     saved = output / "saved_model"
     trainer.save_model(saved)
@@ -243,10 +246,18 @@ def train_resume(model, dataset, collator_factory, tokenizer, output, cpu, seq2s
     if not cpu:
         assert optimizer.defaults.get("fused") is True, "Fused AdamW was not enabled"
         assert resumed.accelerator.mixed_precision == "fp16", "FP16 was not enabled"
+        assert resumed._resume_scaler_restored, "FP16 GradScaler state was not restored"
+        for group in optimizer.param_groups:
+            for parameter in group["params"]:
+                state = optimizer.state.get(parameter, {})
+                if "step" in state:
+                    assert state["step"].device == parameter.device, "Fused AdamW step counter is on the wrong device"
     evaluated = resumed.evaluate()
     assert math.isfinite(evaluated["eval_loss"]), "Non-finite eval loss"
     return resumed, {"initial_steps": 2, "resumed_step": 3, "optimizer_step": optimizer_step,
                      "fused_optimizer": bool(optimizer.defaults.get("fused")),
+                     "resume_fused_step_tensors_moved": resumed._resume_fused_steps_moved,
+                     "resume_fp16_scaler_restored": resumed._resume_scaler_restored,
                      "precision": "fp32" if cpu else "fp16", "initial_loss": result.training_loss,
                      "resumed_loss": resumed_result.training_loss, "evaluation": evaluated}
 

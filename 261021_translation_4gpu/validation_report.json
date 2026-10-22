@@ -69,5 +69,47 @@
     "portable_directory_export_and_import": "fixture tests passed",
     "code_only_local_workspace": "8 fixture tests passed",
     "actual_nfs_mount_and_linux_publication": "not executed locally"
+  },
+  "resume_compatibility_20261022": {
+    "checked_at": "2026-10-22T05:18:15.538783+00:00",
+    "reported_server_failure": "fused AdamW state_steps remained on CPU after checkpoint load",
+    "fix": "Move only misplaced fused AdamW step tensors to their parameter device; save/restore FP16 GradScaler",
+    "regression_tests": {
+      "run": 12,
+      "passed": 11,
+      "skipped_cuda_test": 1
+    },
+    "smoke_and_runner_tests": {
+      "run": 29,
+      "passed": 29
+    },
+    "cpu_training_smoke": {
+      "status": "cpu_only_passed",
+      "versions": {
+        "torch": "2.0.1+cpu",
+        "transformers": "4.40.1",
+        "datasets": "2.19.1",
+        "tokenizers": "0.19.1",
+        "numpy": "1.26.4",
+        "pyarrow": "15.0.2",
+        "accelerate": "0.30.1",
+        "sentencepiece": "0.2.0",
+        "sacrebleu": "2.6.0",
+        "rapidfuzz": "3.14.5"
+      },
+      "variants": [
+        "dialect",
+        "klue",
+        "kobert",
+        "mbert"
+      ]
+    },
+    "training_defaults_unchanged_from_pre_fix": {
+      "step2_pretrain_standard_decoder_clm.py:parse_args": true,
+      "step2_pretrain_standard_decoder_clm.py:build_training_arguments": true,
+      "step3_train_dialect_to_standard.py:parse_args": true,
+      "step3_train_dialect_to_standard.py:build_training_arguments": true
+    },
+    "actual_cuda_resume_retest": "pending on 4090 server"
   }
 }

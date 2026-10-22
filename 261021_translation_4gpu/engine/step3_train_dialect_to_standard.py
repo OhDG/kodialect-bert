@@ -16,9 +16,9 @@ from transformers import (
     AutoModel,
     BertLMHeadModel,
     EncoderDecoderModel,
-    Seq2SeqTrainer,
     Seq2SeqTrainingArguments,
 )
+from trainer_compat import ResumeSafeSeq2SeqTrainer as Seq2SeqTrainer
 
 from experiment_common import (
     REGION_LABELS,

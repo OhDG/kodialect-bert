@@ -8,9 +8,9 @@ from transformers import (
     BertConfig,
     BertLMHeadModel,
     DataCollatorForLanguageModeling,
-    Trainer,
     TrainingArguments,
 )
+from trainer_compat import ResumeSafeTrainer as Trainer
 
 from experiment_common import (
     configure_cuda,
