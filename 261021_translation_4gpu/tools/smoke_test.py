@@ -2,8 +2,9 @@
 """Offline training smoke; a CPU-only pass never certifies CUDA readiness.
 
 Default: parallel, independent one-GPU workers and four synthetic tokenizer
-variants. Each worker trains CLM for two optimizer steps, reloads its checkpoint
-and resumes to step three, then does the same for its assigned seq2seq variants.
+variants. Each worker allows eight optimizer attempts before and after a
+checkpoint, requiring at least two real updates in each phase. FP16 overflow
+may skip an update while GradScaler adapts; persistent failure still fails.
 --require-inputs checks the transferred tokenizers using the production loader.
 --production-shapes additionally loads the real MLM encoders and uses the
 production 6-layer/384-wide decoder. This is still a small-batch functional test,
@@ -36,6 +37,62 @@ EXPECTED = {
     "rapidfuzz": "3.14.5",
 }
 TEXTS = ["오늘 날씨 정말 좋다", "학교에 가요", "밥 먹었어요", "안녕하세요"]
+SMOKE_ATTEMPTS = 8
+MIN_SUCCESSFUL_UPDATES = 2
+
+
+def optimizer_step_counts(optimizer):
+    while hasattr(optimizer, "optimizer"):
+        optimizer = optimizer.optimizer
+    return {f"{group_index}:{parameter_index}": int(optimizer.state[parameter]["step"])
+            for group_index, group in enumerate(optimizer.param_groups)
+            for parameter_index, parameter in enumerate(group["params"])
+            if "step" in optimizer.state.get(parameter, {})}
+
+
+class UpdateProgress:
+    """Track actual Adam updates, independent of Trainer's attempted-step count."""
+    def __init__(self, expected_steps=None, expected_scaler=None):
+        self.expected_steps = expected_steps
+        self.expected_scaler = expected_scaler
+        self.records = []
+        self.initial_steps = {}
+        self.last_steps = {}
+        self.scale = None
+
+    def begin(self, steps, scaler_state):
+        if self.expected_steps is not None:
+            assert steps == self.expected_steps, "Optimizer counters were not restored exactly"
+        if self.expected_scaler is not None:
+            assert scaler_state == self.expected_scaler, "FP16 scaler state was not restored exactly"
+        self.initial_steps = dict(steps)
+        self.last_steps = dict(steps)
+        self.scale = scaler_state.get("scale") if scaler_state else None
+
+    def record(self, steps, scale):
+        assert self.last_steps.keys() <= steps.keys(), "Optimizer state disappeared during training"
+        increments = [value - self.last_steps.get(key, 0) for key, value in steps.items()]
+        assert all(value in (0, 1) for value in increments), "Optimizer counter reset or jumped"
+        updated = any(value == 1 for value in increments)
+        if not updated:
+            assert self.scale is not None and scale is not None and scale < self.scale, \
+                "Optimizer did not update and FP16 loss scaling did not back off"
+        self.records.append({"updated": updated, "scale_before": self.scale, "scale_after": scale})
+        self.last_steps = dict(steps)
+        self.scale = scale
+        return updated
+
+    def require_successes(self, minimum=MIN_SUCCESSFUL_UPDATES):
+        successful = sum(item["updated"] for item in self.records)
+        assert successful >= minimum, \
+            f"Only {successful} successful optimizer updates in {len(self.records)} attempts; need {minimum}"
+        return successful
+
+
+def assert_finite_parameters(model):
+    import torch
+    assert all(torch.isfinite(parameter).all().item() for parameter in model.parameters()), \
+        "Non-finite model parameters"
 
 
 def write_json(path, value):
@@ -109,17 +166,17 @@ def model_config(tokenizer, production=False, decoder=False):
                       pad_token_id=tokenizer.pad_token_id, is_decoder=decoder, add_cross_attention=decoder)
 
 
-def training_args(output, cpu, seq2seq=False, max_steps=2):
+def training_args(output, cpu, seq2seq=False, max_steps=SMOKE_ATTEMPTS):
     from transformers import TrainingArguments, Seq2SeqTrainingArguments
     cls = Seq2SeqTrainingArguments if seq2seq else TrainingArguments
     kwargs = dict(output_dir=str(output), max_steps=max_steps, per_device_train_batch_size=2,
                   per_device_eval_batch_size=2, gradient_accumulation_steps=1,
                   learning_rate=1e-4, lr_scheduler_type="constant",
-                  save_strategy="steps", save_steps=2, save_total_limit=2,
+                  save_strategy="steps", save_steps=SMOKE_ATTEMPTS, save_total_limit=2,
                   logging_steps=1, evaluation_strategy="no", report_to="none", disable_tqdm=True,
                   fp16=not cpu, tf32=not cpu, optim="adamw_torch" if cpu else "adamw_torch_fused",
                   dataloader_num_workers=0, seed=13, data_seed=13, save_safetensors=True,
-                  remove_unused_columns=False, no_cuda=cpu)
+                  remove_unused_columns=False, no_cuda=cpu, logging_nan_inf_filter=False)
     if seq2seq:
         kwargs.update(predict_with_generate=True, generation_max_length=12, generation_num_beams=2)
     return cls(**kwargs)
@@ -152,27 +209,35 @@ def production_memory_probe(model, source, target, seq2seq=False):
     assert train_batch["labels"].shape == (64, 128)
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-4, fused=True)
     scaler = torch.cuda.amp.GradScaler()
-    optimizer.zero_grad(set_to_none=True)
     model.train()
     torch.cuda.reset_peak_memory_stats()
     losses = []
-    for _ in range(4):
-        with torch.cuda.amp.autocast(dtype=torch.float16):
-            result = model(**train_batch)
-            loss = result.loss
-        assert torch.isfinite(loss).item(), "Non-finite loss at production batch shape"
-        losses.append(float(loss.detach()))
-        scaler.scale(loss / 4).backward()
-        del result, loss
-    scaler.unscale_(optimizer)
-    torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-    scaler.step(optimizer)
-    scaler.update()
-    torch.cuda.synchronize()
-    steps = [int(state["step"]) for state in optimizer.state.values() if "step" in state]
-    assert steps and max(steps) == 1, "Production-shape optimizer step was skipped (FP16 overflow)"
+    progress = UpdateProgress()
+    progress.begin(optimizer_step_counts(optimizer), scaler.state_dict())
+    for attempt in range(SMOKE_ATTEMPTS):
+        optimizer.zero_grad(set_to_none=True)
+        for _ in range(4):
+            with torch.cuda.amp.autocast(dtype=torch.float16):
+                result = model(**train_batch)
+                loss = result.loss
+            assert torch.isfinite(loss).item(), "Non-finite loss at production batch shape"
+            losses.append(float(loss.detach()))
+            scaler.scale(loss / 4).backward()
+            del result, loss
+        scaler.unscale_(optimizer)
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+        scaler.step(optimizer)
+        scaler.update()
+        torch.cuda.synchronize()
+        assert_finite_parameters(model)
+        updated = progress.record(optimizer_step_counts(optimizer), scaler.get_scale())
+        print(f"[MEMORY PROBE] attempt={attempt + 1} updated={updated} scale={scaler.get_scale()}", flush=True)
+        if updated:
+            break
+    progress.require_successes(minimum=1)
     report = {"train_batch_size": 64, "gradient_accumulation_steps": 4, "sequence_length": 128,
-              "optimizer_steps": 1, "fused_optimizer": True, "precision": "fp16",
+              "optimizer_steps": 1, "optimizer_attempts": progress.records,
+              "fused_optimizer": True, "precision": "fp16",
               "train_losses": losses, "train_peak_allocated_bytes": torch.cuda.max_memory_allocated(),
               "train_peak_reserved_bytes": torch.cuda.max_memory_reserved()}
     optimizer.zero_grad(set_to_none=True)
@@ -210,16 +275,48 @@ def production_memory_probe(model, source, target, seq2seq=False):
 
 def train_resume(model, dataset, collator_factory, tokenizer, output, cpu, seq2seq=False):
     import torch
+    from transformers import TrainerCallback
     from trainer_compat import ResumeSafeTrainer as Trainer, ResumeSafeSeq2SeqTrainer as Seq2SeqTrainer
     from experiment_common import enable_trusted_local_resume
-    cls = Seq2SeqTrainer if seq2seq else Trainer
+    base = Seq2SeqTrainer if seq2seq else Trainer
+
+    class CheckedTrainer(base):
+        def compute_loss(self, *args, **kwargs):
+            result = super().compute_loss(*args, **kwargs)
+            loss = result[0] if isinstance(result, tuple) else result
+            assert torch.isfinite(loss).all().item(), "Non-finite loss during smoke training/evaluation"
+            return result
+
+    def progress_callback(progress, expected_parameters=None):
+        class ProgressCallback(TrainerCallback):
+            def on_train_begin(self, args, state, control, optimizer=None, model=None, **kwargs):
+                scaler = getattr(optimizer, "scaler", None)
+                progress.begin(optimizer_step_counts(optimizer), scaler.state_dict() if scaler else None)
+                if expected_parameters is not None:
+                    assert all(torch.equal(expected_parameters[name], parameter.detach().cpu())
+                               for name, parameter in model.named_parameters()), \
+                        "Checkpoint model parameters were not restored exactly"
+
+            def on_step_end(self, args, state, control, optimizer=None, model=None, **kwargs):
+                scaler = getattr(optimizer, "scaler", None)
+                assert_finite_parameters(model)
+                updated = progress.record(optimizer_step_counts(optimizer), scaler.get_scale() if scaler else None)
+                print(f"[SMOKE UPDATE] attempt={len(progress.records)} updated={updated} scale={progress.scale}", flush=True)
+
+            def on_train_end(self, args, state, control, **kwargs):
+                progress.require_successes()
+        return ProgressCallback()
+
+    cls = CheckedTrainer
+    initial_progress = UpdateProgress()
     trainer = cls(model=model, args=training_args(output, cpu, seq2seq), train_dataset=dataset,
-                  eval_dataset=dataset.select(range(2)), data_collator=collator_factory(model), tokenizer=tokenizer)
+                  eval_dataset=dataset.select(range(2)), data_collator=collator_factory(model), tokenizer=tokenizer,
+                  callbacks=[progress_callback(initial_progress)])
     result = trainer.train()
-    assert trainer.state.global_step == 2 and math.isfinite(result.training_loss)
+    assert trainer.state.global_step == SMOKE_ATTEMPTS and math.isfinite(result.training_loss)
     if not cpu:
         assert next(model.parameters()).device.type == "cuda"
-    checkpoint = output / "checkpoint-2"
+    checkpoint = output / f"checkpoint-{trainer.state.global_step}"
     required_files = ["trainer_state.json", "optimizer.pt", "scheduler.pt"]
     if not cpu:
         required_files.append("scaler.pt")
@@ -227,22 +324,28 @@ def train_resume(model, dataset, collator_factory, tokenizer, output, cpu, seq2s
         assert (checkpoint / required).is_file(), f"Missing resume state: {required}"
     saved = output / "saved_model"
     trainer.save_model(saved)
+    saved_steps = optimizer_step_counts(trainer.optimizer)
+    scaler = trainer.accelerator.scaler
+    saved_scaler = scaler.state_dict() if scaler else None
     model_cls = type(model)
     del trainer, model
     gc.collect()
     if not cpu:
         torch.cuda.empty_cache()
     restored = model_cls.from_pretrained(saved, local_files_only=True)
-    before_resume = next(restored.parameters()).detach().cpu().clone()
+    before_resume = {name: parameter.detach().cpu().clone() for name, parameter in restored.named_parameters()}
+    resumed_progress = UpdateProgress(saved_steps, saved_scaler)
     enable_trusted_local_resume(str(checkpoint), str(output))
-    resumed = cls(model=restored, args=training_args(output, cpu, seq2seq, max_steps=3), train_dataset=dataset,
-                  eval_dataset=dataset.select(range(2)), data_collator=collator_factory(restored), tokenizer=tokenizer)
+    resumed = cls(model=restored, args=training_args(output, cpu, seq2seq, max_steps=2 * SMOKE_ATTEMPTS), train_dataset=dataset,
+                  eval_dataset=dataset.select(range(2)), data_collator=collator_factory(restored), tokenizer=tokenizer,
+                  callbacks=[progress_callback(resumed_progress, before_resume)])
     resumed_result = resumed.train(resume_from_checkpoint=str(checkpoint))
-    assert resumed.state.global_step == 3 and math.isfinite(resumed_result.training_loss)
-    assert not torch.equal(before_resume, next(restored.parameters()).detach().cpu()), "Resume did not update model weights"
+    assert resumed.state.global_step == 2 * SMOKE_ATTEMPTS and math.isfinite(resumed_result.training_loss)
+    assert any(not torch.equal(before_resume[name], parameter.detach().cpu())
+               for name, parameter in restored.named_parameters()), "Resume did not update model weights"
     optimizer = getattr(resumed.optimizer, "optimizer", resumed.optimizer)
-    optimizer_step = max(int(state["step"]) for state in optimizer.state.values() if "step" in state)
-    assert optimizer_step == 3, "Optimizer state did not resume from step two"
+    optimizer_step = max(optimizer_step_counts(optimizer).values())
+    assert optimizer_step > max(saved_steps.values()), "Resumed optimizer counters did not advance"
     if not cpu:
         assert optimizer.defaults.get("fused") is True, "Fused AdamW was not enabled"
         assert resumed.accelerator.mixed_precision == "fp16", "FP16 was not enabled"
@@ -254,7 +357,12 @@ def train_resume(model, dataset, collator_factory, tokenizer, output, cpu, seq2s
                     assert state["step"].device == parameter.device, "Fused AdamW step counter is on the wrong device"
     evaluated = resumed.evaluate()
     assert math.isfinite(evaluated["eval_loss"]), "Non-finite eval loss"
-    return resumed, {"initial_steps": 2, "resumed_step": 3, "optimizer_step": optimizer_step,
+    return resumed, {"initial_steps": SMOKE_ATTEMPTS, "resumed_step": resumed.state.global_step,
+                     "initial_successful_updates": initial_progress.require_successes(),
+                     "resumed_successful_updates": resumed_progress.require_successes(),
+                     "initial_update_attempts": initial_progress.records,
+                     "resumed_update_attempts": resumed_progress.records,
+                     "optimizer_step": optimizer_step,
                      "fused_optimizer": bool(optimizer.defaults.get("fused")),
                      "resume_fused_step_tensors_moved": resumed._resume_fused_steps_moved,
                      "resume_fp16_scaler_restored": resumed._resume_scaler_restored,
