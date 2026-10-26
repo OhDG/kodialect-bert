@@ -1,0 +1,53 @@
+{
+  "scope": "local implementation and CPU fixture validation; production tokenizers not available locally",
+  "production_evaluation_completed": false,
+  "unit_tests": {
+    "command": ".env/Scripts/python.exe -m unittest discover -s tests -v",
+    "passed": 19,
+    "skipped": 0
+  },
+  "cpu_fixture": {
+    "command": ".env/Scripts/python.exe tools/smoke_test.py --output-dir smoke/cpu_fixture_02",
+    "passed": true,
+    "conditions": 4,
+    "sentences": 3,
+    "tokenizer": "tiny locally saved BertTokenizerFast fixtures, same vocabulary in all four conditions",
+    "pytorch_installed": false,
+    "verified": [
+      "weight-free archive export/import",
+      "offline AutoTokenizer loading",
+      "token counts",
+      "Fertility",
+      "CWR",
+      "UNK",
+      "JSON",
+      "CSV",
+      "Markdown",
+      "LaTeX"
+    ],
+    "limitation": "does not validate the real KoBERT custom code or replace full production evaluation"
+  },
+  "source_corpus_inventory": {
+    "sentences": 1111735,
+    "words": 7734968,
+    "characters_including_spaces": 26876701,
+    "characters_excluding_spaces": 20253468,
+    "unique_words": 632848,
+    "sha256": "cfc56934f83b8f1e3443aa3c6c9a9a24fa101466fedfa91bad99e30239399e5c"
+  },
+  "syntax_checks": {
+    "python_compile": "passed",
+    "powershell_parser": "passed",
+    "bash_parser": "passed",
+    "bash_help": "passed"
+  },
+  "server_input_preparation": {
+    "source": "261012_common_preprocessing_reexperiment/server/region_classification/outputs/mlm/{dialect,klue,kobert,mbert}/final_model",
+    "original_files_modified": false,
+    "model_weights_loaded": false,
+    "local_custom_code_routing_test": "passed with a synthetic tokenizer; token IDs and vocabulary preserved",
+    "production_saved_tokenizers_verified_on_server": false,
+    "linux_server_full_run_completed": false,
+    "next_step": "run_server.sh --setup, --check, --smoke, then --full on the server"
+  }
+}
